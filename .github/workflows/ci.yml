@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  macos:
+    name: Build and test (macOS)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app
+      - name: Build all targets
+        run: swift build --build-tests
+      - name: Run tests
+        run: swift test
+
+  linux:
+    name: Build and test EnsignCore (Linux)
+    runs-on: ubuntu-latest
+    container: swift:6.0
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build --build-tests
+      - name: Run tests
+        run: swift test
+
+  license-headers:
+    name: Check Apache 2.0 headers
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify every Swift source file carries the license header
+        run: |
+          missing=0
+          while IFS= read -r f; do
+            if ! head -1 "$f" | grep -q "Copyright"; then
+              echo "Missing license header: $f"
+              missing=1
+            fi
+          done < <(find Sources Tests -name '*.swift')
+          exit $missing

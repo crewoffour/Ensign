@@ -1,0 +1,15 @@
+Ensign
+Copyright 2026 Jason Griffin
+
+A native Swift library for MIL-STD-2525 symbology.
+Licensed under the Apache License, Version 2.0.
+
+Third-party attributions
+------------------------
+Portions of the symbol definition data in future releases will be derived
+from milsymbol (https://github.com/spatialillusions/milsymbol),
+Copyright (c) Mans Beckman, spatialillusions.com, licensed under the
+MIT License. The MIT copyright and permission notice will be reproduced
+here alongside the ported portions when that data lands.
+
+No third-party code or data is included in this release.
