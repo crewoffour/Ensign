@@ -48,7 +48,7 @@ let package = Package(
         ),
         .executableTarget(
             name: "EnsignCatalog",
-            dependencies: ["EnsignCore"]
+            dependencies: ["EnsignCore", "EnsignRender"]
         ),
         .testTarget(
             name: "EnsignCoreTests",

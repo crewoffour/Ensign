@@ -26,6 +26,9 @@ public enum SymbolDomain: Hashable, Sendable {
     case seaSurface
     case subsurface
     case activity
+    /// Dismounted individual (2525D symbol set 27). Distinct from land
+    /// unit because 2525D/E gives it its own friend frame, a hexagon.
+    case dismountedIndividual
     /// A domain that parses cleanly but has no frame rendering defined
     /// yet (control measures, METOC, cyberspace, tactical graphics, and
     /// unrecognized codes). The associated value preserves the raw
@@ -78,8 +81,10 @@ public enum SymbolDomain: Hashable, Sendable {
             self = .air
         case .space, .spaceMissile, .signalsIntelligenceSpace:
             self = .space
-        case .landUnit, .landCivilian, .dismountedIndividual:
+        case .landUnit, .landCivilian:
             self = .landUnit
+        case .dismountedIndividual:
+            self = .dismountedIndividual
         case .landEquipment, .signalsIntelligenceLand:
             self = .landEquipment
         case .landInstallation:
@@ -132,7 +137,7 @@ public enum OperationalStatus: Hashable, Sendable, CaseIterable {
 
 /// The distinct frame outlines of MIL-STD-2525, prior to any geometry.
 ///
-/// Geometry for each shape is authored in EnsignRender against the
+/// Geometry for each shape is authored in ``FrameGeometry`` against the
 /// 200x200 canvas. The space domain reuses the air outlines and adds a
 /// filled bar overlay at composition time, so it introduces no shapes of
 /// its own here.
@@ -147,6 +152,8 @@ public enum FrameShape: Hashable, Sendable, CaseIterable {
     case diamond
     /// Unknown land and sea surface (four-lobed clover).
     case quatrefoil
+    /// Friend dismounted individual (2525D/E only).
+    case hexagon
     /// Friend air and space (dome, open at the bottom).
     case archOpenBottom
     /// Friend subsurface (bowl, open at the top).
@@ -186,6 +193,13 @@ public enum FrameShape: Hashable, Sendable, CaseIterable {
             switch base {
             case .unknown: return .quatrefoil
             case .friend: return .circle
+            case .neutral: return .square
+            case .hostile: return .diamond
+            }
+        case .dismountedIndividual:
+            switch base {
+            case .unknown: return .quatrefoil
+            case .friend: return .hexagon
             case .neutral: return .square
             case .hostile: return .diamond
             }

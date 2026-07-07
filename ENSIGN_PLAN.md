@@ -11,7 +11,7 @@ complete.
 | Session | Scope | Status |
 |---|---|---|
 | 1 | Package scaffold; EnsignCore with dual SIDC parsers (2525C 15-char, 2525D 20-digit), normalized MilSymbol model, frame resolution, geometry model; test suite; CI | Complete |
-| 2 | EnsignRender frame engine: geometry for all 13 frame outlines, affiliation fills, dashed frames, space bar overlay, palette with light/medium/dark modes and custom palette hook; catalog frame grid | Planned |
+| 2 | Frame engine: exact milsymbol-ported geometry for all 14 frame outlines (incl. dismounted hexagon), space bar and activity corner overlays, dashed-frame overlay mechanism, fill classes and light/medium/dark palettes with custom palette hook, SymbolComposer, Core Graphics SymbolRenderer, PNG contact-sheet catalog | Complete |
 | 3 | Extraction tool (tools/, Node.js): milsymbol draw-instruction serialization, icon text to outline paths via opentype.js with pinned font, Swift code generation, milsymbol reference-render oracle harness | Planned |
 | 4 | Maritime-first icon subset through the pipeline, both dialects; snapshot regression suite (hand-rolled, no shipped dependencies) | Planned |
 | 5 | Rasterization to images; sprite atlas generation matching Beacon's MapLibre atlas format with incremental additions; EnsignUI SwiftUI views | Planned |
@@ -43,6 +43,11 @@ complete.
 | Hand-rolled snapshot testing | Roughly 80 lines; avoids shipping a third-party test dependency to adopters. |
 | Full 2525C identity set parsed | Real TAK traffic emits exercise and uncertainty variants (all 15 identities including joker and faker), not just the four base affiliations. |
 | Charlie codes of 10-14 characters pad to 15 | Real-world traffic frequently omits trailing fill. '*' accepted as a fill alias; input uppercased. |
+| Frame geometry ported coordinate-exact from milsymbol 3.0.4 | Session 3's oracle pixel-diffs Ensign output against milsymbol reference renders; approximated coordinates would flag every symbol. milsymbol 3.x renders per 2525E, which also matches Beacon's existing atlas. MIT attribution recorded in NOTICE. |
+| Dashed frames are a white overlay, not a dashed stroke | milsymbol draws the solid frame, then strokes a white dashed outline (width 5 over the width-4 frame) on top. Ported as-is for pixel parity. Dash arrays: 4,4 for uncertain identity, 8,12 for anticipated status; status takes precedence when both apply. |
+| Dismounted individual is its own domain with a hexagon friend frame | 2525D/E symbol set 27 has distinct frames (hexagon/diamond/square/quatrefoil), not the land unit rectangle. Corrected from the Session 1 mapping. |
+| Fill classes are distinct from affiliations | Six 2525D fill classes (friend, hostile, neutral, unknown, civilian, suspect); joker fills as suspect, faker as hostile, civilian purple applies only to non-threat civilians. Civilian detection currently covers delta set 11; charlie civilian function IDs deferred. |
+| Installation bar and HQ staff deferred to Session 7 | Both are modifier-stage drawing (milsymbol handles them outside base geometry; HQ staff length is 100 canvas units). Frames render correctly without them. |
 
 ## Session 1 deliverables (this session)
 

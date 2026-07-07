@@ -12,17 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// The dash treatment for a non-solid frame. Per milsymbol (and for
+/// oracle pixel parity), dashing is rendered as a white overlay stroked
+/// on top of the solid frame; these cases carry the exact milsymbol
+/// dash arrays.
+public enum FrameDash: Hashable, Sendable {
+    /// Pending, assumed friend, suspect, and joker identities.
+    case uncertainIdentity
+    /// Anticipated (charlie) / planned (delta) status.
+    case anticipatedStatus
+
+    /// The dash array in canvas units.
+    public var pattern: [Double] {
+        switch self {
+        case .uncertainIdentity: return [4, 4]
+        case .anticipatedStatus: return [8, 12]
+        }
+    }
+}
+
 /// Everything the composition stage needs to know about a frame.
 public struct FrameDescriptor: Hashable, Sendable {
     /// The outline to draw, or `nil` when the domain has no frame
     /// rendering defined (the symbol is parsed but unframeable).
     public let shape: FrameShape?
-    /// Whether the frame is drawn dashed: true for uncertain identities
-    /// (pending, assumed friend, suspect, joker) and for anticipated or
-    /// planned status.
+    /// Whether the frame is drawn dashed. Equivalent to `dash != nil`.
     public let isDashed: Bool
+    /// The dash treatment, or `nil` for a solid frame. Anticipated
+    /// status takes precedence over uncertain identity when both apply.
+    public let dash: FrameDash?
     /// Whether the space bar overlay applies (space domain only).
     public let hasSpaceModifier: Bool
+    /// Whether the activity corner brackets apply (activity domain only).
+    public let hasActivityModifier: Bool
 }
 
 /// A stable, version-scoped key identifying a main icon.
@@ -145,10 +167,20 @@ public struct MilSymbol: Hashable, Sendable {
     public var frame: FrameDescriptor {
         let base = affiliation.frameBase
         let resolvedDomain = domain
+        let dash: FrameDash?
+        if status == .anticipated {
+            dash = .anticipatedStatus
+        } else if affiliation.isUncertain {
+            dash = .uncertainIdentity
+        } else {
+            dash = nil
+        }
         return FrameDescriptor(
             shape: FrameShape.resolve(base: base, domain: resolvedDomain),
-            isDashed: affiliation.isUncertain || status == .anticipated,
-            hasSpaceModifier: resolvedDomain == .space
+            isDashed: dash != nil,
+            dash: dash,
+            hasSpaceModifier: resolvedDomain == .space,
+            hasActivityModifier: resolvedDomain == .activity
         )
     }
 

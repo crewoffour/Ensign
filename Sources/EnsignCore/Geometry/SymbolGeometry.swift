@@ -76,13 +76,26 @@ public struct DrawStyle: Hashable, Sendable {
         self.dash = dash
     }
 
-    /// The standard frame style: affiliation fill under a stroked outline.
-    public static func frame(dashed: Bool) -> DrawStyle {
+    /// The standard frame style: affiliation fill under a solid stroked
+    /// outline. Dashing is never applied to the frame stroke itself; per
+    /// milsymbol (and for oracle pixel parity), uncertain and anticipated
+    /// frames draw a white dashed overlay on top of the solid frame. See
+    /// ``frameDashOverlay(pattern:)``.
+    public static let frame = DrawStyle(
+        fill: .affiliationFill,
+        stroke: .frameStroke,
+        strokeWidth: 4
+    )
+
+    /// The dashed overlay stroked over a solid frame for uncertain
+    /// identities and anticipated status: contrast color (white in the
+    /// standard palettes), one unit wider than the frame stroke so it
+    /// fully covers it, dashed with the given pattern.
+    public static func frameDashOverlay(pattern: [Double]) -> DrawStyle {
         DrawStyle(
-            fill: .affiliationFill,
-            stroke: .frameStroke,
-            strokeWidth: 4,
-            dash: dashed ? [12, 12] : nil
+            stroke: .contrastFill,
+            strokeWidth: 5,
+            dash: pattern
         )
     }
 

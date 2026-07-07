@@ -14,11 +14,9 @@
 
 // EnsignRender: the Core Graphics drawing engine.
 //
-// Session 2 delivers the compose-and-emit stages here: frame geometry
-// for every FrameShape, affiliation fill, dashed status frames, the
-// space bar overlay, and the palette that resolves ColorRole values
-// (standard 2525 light, medium, and dark fill modes plus a custom
-// palette hook). The canImport guard keeps this target an empty,
+// SymbolRenderer turns composed SymbolGeometry into CGContext drawing,
+// CGImage bitmaps, and PNG data, resolving semantic color roles through
+// a SymbolPalette. The canImport guard keeps this target an empty,
 // harmless compile on Linux, where only EnsignCore is meaningful.
 
 #if canImport(CoreGraphics)
