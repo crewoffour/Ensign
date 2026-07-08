@@ -351,7 +351,7 @@ public enum FrameGeometry {
 }
 
 /// Composes the drawable geometry for a symbol: frame, frame-level
-/// overlays, and (from Session 4 onward) the main icon.
+/// overlays, and the main icon when the ``IconLibrary`` knows it.
 public enum SymbolComposer {
 
     /// The style used for filled frame-level overlays (space bar,
@@ -389,12 +389,19 @@ public enum SymbolComposer {
             )))
         }
 
-        // The dashed overlay is stroked last, on top of the solid frame.
+        // The dashed overlay is stroked on top of the solid frame.
         if let dash = frame.dash {
             instructions.append(instruction(
                 for: shape,
                 style: .frameDashOverlay(pattern: dash.pattern)
             ))
+        }
+
+        // The main icon paints last, matching milsymbol's part order
+        // (its base geometry part emits the dash overlay before the
+        // icon part runs). Unknown icons degrade to frame and fill.
+        if let icon = IconLibrary.instructions(for: symbol.iconKey, base: base) {
+            instructions.append(contentsOf: icon)
         }
 
         return SymbolGeometry(instructions: instructions)

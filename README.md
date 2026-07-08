@@ -13,10 +13,11 @@ aims to be the definitive one.
 
 ## Status
 
-Early development. The SIDC parsers, normalized symbol model, and frame
+Early development. The SIDC parsers, normalized symbol model, frame
 rendering (all affiliation and domain frames with the standard 2525
-fill palettes, rendered through Core Graphics) are functional and
-tested. Icon rendering and SwiftUI support are under active
+fill palettes), and the icon data pipeline are functional, with output
+verified pixel-identical against milsymbol reference renders. The
+maritime icon subset and SwiftUI support are under active
 development. The public API is not yet stable and will change before
 1.0.
 
@@ -90,7 +91,7 @@ dependencies: [
 
 1. SIDC parsing for both dialects and the normalized model (done)
 2. Frame rendering: all affiliation and domain outlines, fills, status (done)
-3. Symbol data pipeline: milsymbol port as proving ground and oracle
+3. Symbol data pipeline: milsymbol port as proving ground and oracle (done)
 4. Maritime-first icon subset (roughly 50-100 symbols)
 5. Rasterization, sprite atlas generation, SwiftUI views
 6. Amplifiers and modifiers; expanded coverage

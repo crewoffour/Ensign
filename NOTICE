@@ -38,4 +38,16 @@ the MIT License:
   SOFTWARE.
 
 The files containing ported data carry a pointer to this NOTICE in
-their headers (FrameGeometry.swift, SymbolPalette.swift).
+their headers (FrameGeometry.swift, SymbolPalette.swift, and the
+generated GeneratedIcons.swift).
+
+Some generated icon geometry includes glyph outlines converted from
+the Liberation Sans typeface (https://github.com/liberationfonts),
+used under the SIL Open Font License, Version 1.1:
+Digitized data copyright (c) 2010 Google Corporation
+    with Reserved Font Arimo, Tinos and Cousine.
+Copyright (c) 2012 Red Hat, Inc.
+    with Reserved Font Name Liberation.
+The OFL text is available at https://openfontlicense.org and is
+distributed with the Liberation Fonts releases. The Reserved Font
+Names are not used by this project.

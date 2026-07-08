@@ -141,21 +141,52 @@ public struct SymbolPalette: Hashable, Sendable {
 }
 
 extension MilSymbol {
-    /// Whether this symbol is a civilian track. Currently detected for
-    /// the delta family (symbol set 11, land civilian); charlie civilian
-    /// function IDs are a future refinement.
+    /// Whether this symbol is a civilian track.
+    ///
+    /// Beyond the land civilian symbol set (11), 2525D flags civilians
+    /// by entity prefix within several sets; this table matches
+    /// milsymbol's numbersidc/metadata.js exactly: air and space
+    /// entities 12xxxx, subsurface 12xxxx, land equipment 16xxxx, and
+    /// sea surface 14xxxx. Charlie civilian function IDs remain a
+    /// future refinement.
     public var isCivilian: Bool {
+        guard case .delta(let value) = sidc else { return false }
+        let entityPrefix = value.entityCode.prefix(2)
+        switch value.symbolSetCode {
+        case "11":
+            return true
+        case "01", "05", "12", "35":
+            return entityPrefix == "12"
+        case "15":
+            return entityPrefix == "16"
+        case "30":
+            return entityPrefix == "14"
+        default:
+            return false
+        }
+    }
+
+    /// Whether the SIDC's edition uses the distinct suspect fill.
+    ///
+    /// The suspect amber is a 2525E treatment, applied to delta SIDCs
+    /// coded with version 13 or 14. Charlie and 2525D-coded suspects
+    /// render with the hostile fill and a dashed frame, which is also
+    /// exactly what milsymbol does (see numbersidc/metadata.js: the
+    /// suspect flag is set only for version 13).
+    var usesSuspectFill: Bool {
         if case .delta(let value) = sidc {
-            return value.symbolSet == .landCivilian
+            return value.versionCode == 13 || value.versionCode == 14
         }
         return false
     }
 
     /// The fill class driving the affiliation fill color.
     ///
-    /// Civilian tracks take the civilian fill only when they would
-    /// otherwise fill as friend, neutral, or unknown; suspect and
-    /// hostile civilians keep the threat fill, per 2525.
+    /// Suspect and joker take the distinct suspect fill only for
+    /// 2525E-coded SIDCs; earlier editions fill them hostile. Civilian
+    /// tracks take the civilian fill only when they would otherwise
+    /// fill as friend, neutral, or unknown; suspect and hostile
+    /// civilians keep the threat fill, per 2525.
     public var fillClass: FillClass {
         let base: FillClass
         switch affiliation {
@@ -166,7 +197,7 @@ extension MilSymbol {
         case .neutral:
             base = .neutral
         case .suspect, .joker:
-            base = .suspect
+            base = usesSuspectFill ? .suspect : .hostile
         case .hostile, .faker:
             base = .hostile
         }

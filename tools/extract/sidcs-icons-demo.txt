@@ -1,0 +1,34 @@
+# Demonstration icon set for the first end-to-end pipeline run.
+#
+# Purpose: prove extract -> keys -> codegen -> render -> diff works,
+# not to be a curated worklist. The real maritime worklist arrives in
+# Session 4, derived from live Beacon and tak-cot-simulator traffic.
+#
+# If milsymbol has no icon for a code, extracted.json marks it
+# validIcon false and codegen skips it with a warning; that is expected
+# for any guesses below that miss the 2525D entity tables.
+
+# Air: military fixed wing (from milsymbol's own examples), friend and hostile
+10030100001101040000
+10060100001101040000
+
+# Land unit: infantry, all four bases (the saltire is a full-frame
+# icon, so its geometry differs per frame; covering every base here
+# exercises the per-base variant path in codegen)
+10031000001211000000
+10061000001211000000
+10041000001211000000
+10011000001211000000
+
+# Sea surface: line entities, friend / neutral / hostile
+10033000001201000000
+10043000001201000000
+10063000001201000000
+
+# Sea surface: civilian merchant style entities
+10033000001401000000
+10033000001402000000
+
+# Subsurface: submarine, friend and hostile
+10033500001101000000
+10063500001101000000

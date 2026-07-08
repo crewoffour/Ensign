@@ -95,10 +95,12 @@ final class ComposerTests: XCTestCase {
         XCTAssertEqual(overlay.dash, [8, 12])
     }
 
-    func testAnticipatedStatusTakesPrecedenceOverUncertainIdentity() throws {
-        // Suspect and planned: one overlay, with the status pattern.
+    func testUncertainIdentityTakesPrecedenceOverAnticipatedStatus() throws {
+        // Suspect and planned: one overlay, with the identity pattern.
+        // milsymbol assigns the anticipated dash first and lets the
+        // uncertain-identity dash overwrite it.
         let symbol = try MilSymbol("10053010000000000000")
-        XCTAssertEqual(symbol.frame.dash, .anticipatedStatus)
+        XCTAssertEqual(symbol.frame.dash, .uncertainIdentity)
         let geometry = SymbolComposer.geometry(for: symbol)
         XCTAssertEqual(geometry.instructions.count, 2)
     }
@@ -177,9 +179,23 @@ final class ComposerTests: XCTestCase {
         XCTAssertEqual(try MilSymbol("10043000000000000000").fillClass, .neutral)
         XCTAssertEqual(try MilSymbol("10013000000000000000").fillClass, .unknown)
         XCTAssertEqual(try MilSymbol("10003000000000000000").fillClass, .unknown)  // pending
-        XCTAssertEqual(try MilSymbol("10053000000000000000").fillClass, .suspect)
-        XCTAssertEqual(try MilSymbol("10153000000000000000").fillClass, .suspect)  // joker
         XCTAssertEqual(try MilSymbol("10163000000000000000").fillClass, .hostile)  // faker
+    }
+
+    func testSuspectFillIsEditionAware() throws {
+        // 2525D-coded suspects and jokers fill hostile (with the dashed
+        // frame); the distinct suspect amber is a 2525E treatment,
+        // applied to version 13/14 SIDCs. Matches milsymbol.
+        XCTAssertEqual(try MilSymbol("10053000000000000000").fillClass, .hostile)
+        XCTAssertEqual(try MilSymbol("10153000000000000000").fillClass, .hostile)  // joker
+        XCTAssertEqual(try MilSymbol("13053000000000000000").fillClass, .suspect)
+        XCTAssertEqual(try MilSymbol("13153000000000000000").fillClass, .suspect)  // joker
+        XCTAssertEqual(try MilSymbol("14053000000000000000").fillClass, .suspect)
+        // Charlie is 2525C: suspect fills hostile.
+        XCTAssertEqual(try MilSymbol("SSSP-----------").fillClass, .hostile)
+        // The dashed identity frame applies in every edition.
+        XCTAssertTrue(try MilSymbol("10053000000000000000").frame.isDashed)
+        XCTAssertTrue(try MilSymbol("13053000000000000000").frame.isDashed)
     }
 
     func testCivilianFillOnlyForNonThreatAffiliations() throws {
@@ -189,9 +205,27 @@ final class ComposerTests: XCTestCase {
         XCTAssertEqual(try MilSymbol("10011100000000000000").fillClass, .civilian)
         // Hostile and suspect civilians keep the threat fill.
         XCTAssertEqual(try MilSymbol("10061100000000000000").fillClass, .hostile)
-        XCTAssertEqual(try MilSymbol("10051100000000000000").fillClass, .suspect)
+        XCTAssertEqual(try MilSymbol("10051100000000000000").fillClass, .hostile)
+        XCTAssertEqual(try MilSymbol("13051100000000000000").fillClass, .suspect)
         // Charlie codes are never civilian for now.
         XCTAssertFalse(try MilSymbol("SFGPUCI--------").isCivilian)
+    }
+
+    func testCivilianEntityPrefixesMatchMilsymbol() throws {
+        // Sea surface 14xxxx is civilian; 12xxxx is a military combatant.
+        XCTAssertTrue(try MilSymbol("10033000001401000000").isCivilian)
+        XCTAssertEqual(try MilSymbol("10033000001401000000").fillClass, .civilian)
+        XCTAssertFalse(try MilSymbol("10033000001201000000").isCivilian)
+        XCTAssertEqual(try MilSymbol("10033000001201000000").fillClass, .friend)
+        // Air and subsurface 12xxxx are civilian.
+        XCTAssertTrue(try MilSymbol("10030100001200000000").isCivilian)
+        XCTAssertTrue(try MilSymbol("10033500001201000000").isCivilian)
+        XCTAssertFalse(try MilSymbol("10033500001101000000").isCivilian)
+        // Land equipment 16xxxx is civilian; 12xxxx is not.
+        XCTAssertTrue(try MilSymbol("10031500001600000000").isCivilian)
+        XCTAssertFalse(try MilSymbol("10031500001200000000").isCivilian)
+        // The threat override still applies to entity-flagged civilians.
+        XCTAssertEqual(try MilSymbol("10063000001401000000").fillClass, .hostile)
     }
 
     func testStandardPaletteValues() {

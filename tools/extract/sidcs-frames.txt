@@ -1,0 +1,74 @@
+# Frame validation SIDC set for the Ensign / milsymbol oracle.
+#
+# Every SIDC here renders as frame plus fill only (entity code 000000,
+# no amplifiers), so Ensign's Session 2 frame engine and milsymbol
+# should produce pixel-comparable output.
+#
+# Deliberately excluded, with reasons:
+#   - Land installation (set 20): milsymbol draws the installation bar
+#     at frame level; Ensign defers it to the modifier stage (Session 7).
+#   - Joker and faker (context 1): milsymbol draws the J/K exercise
+#     text amplifier at frame level; Ensign text amplifiers land in
+#     Session 7.
+# Both remain in the catalog contact sheet for visual inspection.
+#
+# Grid: identity x symbol set
+# Identities: 1 unknown, 3 friend, 4 neutral, 6 hostile
+# Sets: 01 air, 05 space, 10 land unit, 15 land equipment,
+#       27 dismounted individual, 30 sea surface, 35 subsurface,
+#       40 activity
+
+# Unknown
+10010100000000000000
+10010500000000000000
+10011000000000000000
+10011500000000000000
+10012700000000000000
+10013000000000000000
+10013500000000000000
+10014000000000000000
+
+# Friend
+10030100000000000000
+10030500000000000000
+10031000000000000000
+10031500000000000000
+10032700000000000000
+10033000000000000000
+10033500000000000000
+10034000000000000000
+
+# Neutral
+10040100000000000000
+10040500000000000000
+10041000000000000000
+10041500000000000000
+10042700000000000000
+10043000000000000000
+10043500000000000000
+10044000000000000000
+
+# Hostile
+10060100000000000000
+10060500000000000000
+10061000000000000000
+10061500000000000000
+10062700000000000000
+10063000000000000000
+10063500000000000000
+10064000000000000000
+
+# Specials: dash treatments and fill classes
+# Suspect land unit, 2525D-coded (dashed identity, hostile fill;
+# the distinct suspect amber applies only to 2525E-coded SIDCs)
+10051000000000000000
+# Suspect land unit, 2525E-coded (dashed identity, suspect amber fill)
+13051000000000000000
+# Planned friend land unit (dashed status, 8,12 pattern)
+10031010000000000000
+# Friend land civilian (civilian purple fill)
+10031100000000000000
+# Assumed friend subsurface (dashed identity, friend fill)
+10023500000000000000
+# Pending air (dashed identity, unknown fill)
+10000100000000000000

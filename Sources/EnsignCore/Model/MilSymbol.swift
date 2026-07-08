@@ -38,8 +38,9 @@ public struct FrameDescriptor: Hashable, Sendable {
     public let shape: FrameShape?
     /// Whether the frame is drawn dashed. Equivalent to `dash != nil`.
     public let isDashed: Bool
-    /// The dash treatment, or `nil` for a solid frame. Anticipated
-    /// status takes precedence over uncertain identity when both apply.
+    /// The dash treatment, or `nil` for a solid frame. Uncertain
+    /// identity takes precedence over anticipated status when both
+    /// apply, matching milsymbol's assignment order.
     public let dash: FrameDash?
     /// Whether the space bar overlay applies (space domain only).
     public let hasSpaceModifier: Bool
@@ -168,10 +169,10 @@ public struct MilSymbol: Hashable, Sendable {
         let base = affiliation.frameBase
         let resolvedDomain = domain
         let dash: FrameDash?
-        if status == .anticipated {
-            dash = .anticipatedStatus
-        } else if affiliation.isUncertain {
+        if affiliation.isUncertain {
             dash = .uncertainIdentity
+        } else if status == .anticipated {
+            dash = .anticipatedStatus
         } else {
             dash = nil
         }
