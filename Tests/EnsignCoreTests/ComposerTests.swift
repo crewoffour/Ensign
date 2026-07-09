@@ -258,6 +258,28 @@ final class ComposerTests: XCTestCase {
         XCTAssertNil(SymbolComposer.geometry(for: try MilSymbol("10032500000000000000")).extent)
     }
 
+    func testRenderKeyIdentifiesRenderingNotCode() throws {
+        // A 20-digit code and its 30-digit equivalent render alike.
+        XCTAssertEqual(
+            try MilSymbol("13031000001211000000").renderKey,
+            try MilSymbol("130310000012110000000000000000").renderKey)
+        // Different affiliations render differently.
+        XCTAssertNotEqual(
+            try MilSymbol("10033000001201000000").renderKey,
+            try MilSymbol("10063000001201000000").renderKey)
+        // Assumed friend differs from friend (dashed frame).
+        XCTAssertNotEqual(
+            try MilSymbol("10033000001201000000").renderKey,
+            try MilSymbol("10023000001201000000").renderKey)
+        // Fused tracks carry their dash in the key.
+        XCTAssertTrue(try MilSymbol("10033000001600000000").renderKey.contains("dash-identity"))
+        // Own tracks carry their unframed rendering in the key.
+        XCTAssertTrue(try MilSymbol("10033000001500000000").renderKey.contains("unframed"))
+        // Space and activity overlays are keyed.
+        XCTAssertTrue(try MilSymbol("10030500000000000000").renderKey.contains("space"))
+        XCTAssertTrue(try MilSymbol("10034000000000000000").renderKey.contains("activity"))
+    }
+
     // MARK: - Fill classes and palette
 
     func testFillClassMapping() throws {

@@ -92,10 +92,11 @@ dependencies: [
 1. SIDC parsing for both dialects and the normalized model (done)
 2. Frame rendering: all affiliation and domain outlines, fills, status (done)
 3. Symbol data pipeline: milsymbol port as proving ground and oracle (done)
-4. Maritime-first icon subset (roughly 50-100 symbols)
+4. Maritime-first icon subset (done)
 5. Rasterization, sprite atlas generation, SwiftUI views (done)
-6. Amplifiers and modifiers; expanded coverage
-7. Migration to the authoritative JMSML symbol data
+6. Beacon integration via runtime rendering (done)
+7. Amplifiers and modifiers; expanded coverage
+8. Migration to the authoritative JMSML symbol data
 
 ## License
 
