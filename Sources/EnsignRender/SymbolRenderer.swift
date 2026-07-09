@@ -21,6 +21,18 @@ import UniformTypeIdentifiers
 #endif
 import EnsignCore
 
+/// How a symbol is placed within a square render.
+public enum SpriteFit: Sendable {
+    /// The full 200x200 canvas maps to the square: symbols keep their
+    /// authored margins and every symbol shares a common scale. The
+    /// anchor is always the canvas center.
+    case fullCanvas
+    /// The symbol's drawn extent is scaled (aspect-preserved) to fill
+    /// the square and centered: maximum visual size per cell, the
+    /// right choice for map sprite sheets.
+    case tight
+}
+
 /// Renders composed symbol geometry with Core Graphics.
 ///
 /// ```swift
@@ -42,14 +54,19 @@ public struct SymbolRenderer: Sendable {
     /// Renders a symbol into a square bitmap of the given pixel size.
     /// Returns `nil` for unframeable symbols (empty geometry) or an
     /// invalid size.
-    public func image(for symbol: MilSymbol, size: Int) -> CGImage? {
+    public func image(for symbol: MilSymbol, size: Int, fit: SpriteFit = .fullCanvas) -> CGImage? {
         let geometry = SymbolComposer.geometry(for: symbol)
         guard !geometry.instructions.isEmpty else { return nil }
-        return image(geometry: geometry, fillClass: symbol.fillClass, size: size)
+        return image(geometry: geometry, fillClass: symbol.fillClass, size: size, fit: fit)
     }
 
     /// Renders arbitrary geometry into a square bitmap.
-    public func image(geometry: SymbolGeometry, fillClass: FillClass, size: Int) -> CGImage? {
+    public func image(
+        geometry: SymbolGeometry,
+        fillClass: FillClass,
+        size: Int,
+        fit: SpriteFit = .fullCanvas
+    ) -> CGImage? {
         guard size > 0 else { return nil }
         guard let space = CGColorSpace(name: CGColorSpace.sRGB),
               let context = CGContext(
@@ -67,7 +84,26 @@ public struct SymbolRenderer: Sendable {
         context.translateBy(x: 0, y: CGFloat(size))
         context.scaleBy(x: 1, y: -1)
 
-        draw(geometry, fillClass: fillClass, in: context, pixelSize: CGFloat(size))
+        switch fit {
+        case .fullCanvas:
+            draw(geometry, fillClass: fillClass, in: context, pixelSize: CGFloat(size))
+        case .tight:
+            guard let extent = geometry.extent else { return nil }
+            let width = extent.x2 - extent.x1
+            let height = extent.y2 - extent.y1
+            guard width > 0 || height > 0 else { return nil }
+            let scale = CGFloat(size) / CGFloat(max(width, height))
+            let offsetX = (CGFloat(size) - CGFloat(width) * scale) / 2
+            let offsetY = (CGFloat(size) - CGFloat(height) * scale) / 2
+            context.saveGState()
+            context.translateBy(
+                x: offsetX - CGFloat(extent.x1) * scale,
+                y: offsetY - CGFloat(extent.y1) * scale
+            )
+            context.scaleBy(x: scale, y: scale)
+            drawInstructions(geometry, fillClass: fillClass, in: context)
+            context.restoreGState()
+        }
         return context.makeImage()
     }
 
@@ -109,6 +145,17 @@ public struct SymbolRenderer: Sendable {
 
         context.saveGState()
         context.scaleBy(x: scale, y: scale)
+        drawInstructions(geometry, fillClass: fillClass, in: context)
+        context.restoreGState()
+    }
+
+    /// Paints the instructions in canvas coordinates using the
+    /// context's current transform.
+    func drawInstructions(
+        _ geometry: SymbolGeometry,
+        fillClass: FillClass,
+        in context: CGContext
+    ) {
         context.setLineCap(.butt)
         context.setLineJoin(.miter)
 
@@ -128,8 +175,6 @@ public struct SymbolRenderer: Sendable {
                 paint(path, style: style, fillClass: fillClass, in: context)
             }
         }
-
-        context.restoreGState()
     }
 
     private func paint(

@@ -238,6 +238,26 @@ final class ComposerTests: XCTestCase {
         XCTAssertTrue(try MilSymbol("10033000001600000000").frame.isDashed)
     }
 
+    func testGeometryExtentCoversFrameAndStroke() throws {
+        // Friend land unit: rectangle 25,50-175,150 with a width-4
+        // stroke, so the extent grows by 2 on every side.
+        let rectangle = try XCTUnwrap(
+            SymbolComposer.geometry(for: try MilSymbol("10031000000000000000")).extent)
+        XCTAssertEqual(rectangle.x1, 23, accuracy: 0.001)
+        XCTAssertEqual(rectangle.y1, 48, accuracy: 0.001)
+        XCTAssertEqual(rectangle.x2, 177, accuracy: 0.001)
+        XCTAssertEqual(rectangle.y2, 152, accuracy: 0.001)
+
+        // Friend sea surface: circle center 100,100 r 60 plus stroke.
+        let circle = try XCTUnwrap(
+            SymbolComposer.geometry(for: try MilSymbol("10033000000000000000")).extent)
+        XCTAssertEqual(circle.x1, 38, accuracy: 0.001)
+        XCTAssertEqual(circle.x2, 162, accuracy: 0.001)
+
+        // Empty geometry has no extent.
+        XCTAssertNil(SymbolComposer.geometry(for: try MilSymbol("10032500000000000000")).extent)
+    }
+
     // MARK: - Fill classes and palette
 
     func testFillClassMapping() throws {

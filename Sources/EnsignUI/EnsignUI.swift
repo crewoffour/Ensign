@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// EnsignUI: SwiftUI view wrappers and previews.
+// EnsignUI: SwiftUI view wrappers.
 //
-// Session 5 delivers the MilSymbolView wrapper and preview support once
-// the rendering engine exists. The canImport guard keeps this target an
-// empty compile on Linux.
+// MilSymbolView renders a symbol resolution-independently through
+// SwiftUI Canvas. The canImport guard keeps this target an empty
+// compile on Linux.
 
 #if canImport(SwiftUI)
 import SwiftUI

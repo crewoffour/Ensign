@@ -242,11 +242,103 @@ func runContactSheet() {
     }
 }
 
+// MARK: - Atlas mode
+
+/// Reads a Beacon-format symbol manifest ({"symbols": [{"name","sic"}]})
+/// and writes MapLibre sprite pairs: sprite.png/sprite.json at 1x and
+/// sprite@2x.png/sprite@2x.json at 2x.
+func runAtlasMode(manifestPath: String, outputDir: String, pointSize: Int) {
+    struct Manifest: Decodable {
+        struct Entry: Decodable {
+            let name: String
+            let sic: String
+        }
+        let symbols: [Entry]
+    }
+
+    print("Ensign \(Ensign.version) - sprite atlas mode")
+    let manifest: Manifest
+    do {
+        let data = try Data(contentsOf: URL(fileURLWithPath: manifestPath))
+        manifest = try JSONDecoder().decode(Manifest.self, from: data)
+    } catch {
+        print("Could not read the symbol manifest at \(manifestPath).")
+        print("Expected JSON of the form {\"symbols\": [{\"name\": ..., \"sic\": ...}]}: \(error)")
+        exit(2)
+    }
+
+    var symbols: [(name: String, symbol: MilSymbol)] = []
+    var parseFailures = 0
+    for entry in manifest.symbols {
+        do {
+            symbols.append((entry.name, try MilSymbol(entry.sic)))
+        } catch {
+            print("FAIL \(entry.name) [\(entry.sic)]: \(error)")
+            parseFailures += 1
+        }
+    }
+
+    do {
+        try FileManager.default.createDirectory(
+            atPath: outputDir, withIntermediateDirectories: true)
+    } catch {
+        print("Could not create the output directory \(outputDir): \(error)")
+        exit(2)
+    }
+
+    var allSkipped: [(name: String, reason: String)] = []
+    for ratio in [1, 2] {
+        let builder = SpriteAtlasBuilder(
+            palette: .light, pointSize: pointSize, pixelRatio: ratio, padding: 4, fit: .tight)
+        guard let result = builder.build(symbols) else {
+            print("No symbols rendered at \(ratio)x; nothing written.")
+            exit(1)
+        }
+        // Beacon's atlas filenames: sprites.png / sprites@2x.png.
+        let suffix = ratio == 1 ? "" : "@\(ratio)x"
+        let pngURL = URL(fileURLWithPath: outputDir).appendingPathComponent("sprites\(suffix).png")
+        let jsonURL = URL(fileURLWithPath: outputDir).appendingPathComponent("sprites\(suffix).json")
+        do {
+            guard let png = result.atlas.pngData() else {
+                print("Could not encode the \(ratio)x sheet as PNG.")
+                exit(1)
+            }
+            try png.write(to: pngURL)
+            try result.atlas.spriteJSONData().write(to: jsonURL)
+        } catch {
+            print("Could not write the \(ratio)x sprite pair: \(error)")
+            exit(1)
+        }
+        print("Wrote \(result.atlas.entries.count) sprites at \(ratio)x " +
+            "(\(result.atlas.image.width)x\(result.atlas.image.height)px) " +
+            "to \(pngURL.lastPathComponent) + \(jsonURL.lastPathComponent)")
+        if ratio == 1 { allSkipped = result.skipped }
+    }
+
+    if !allSkipped.isEmpty {
+        print("\nSkipped \(allSkipped.count):")
+        for entry in allSkipped {
+            print("  \(entry.name): \(entry.reason)")
+        }
+    }
+    exit(parseFailures > 0 ? 1 : 0)
+}
+
 // MARK: - Entry
+
+if arguments.count >= 2 && arguments[1] == "atlas" {
+    guard arguments.count >= 4 else {
+        print("Usage: ensign-catalog atlas <symbols.json> <output-dir> [point-size]")
+        exit(2)
+    }
+    let pointSize = arguments.count >= 5 ? Int(arguments[4]) ?? 40 : 40
+    runAtlasMode(manifestPath: arguments[2], outputDir: arguments[3], pointSize: pointSize)
+}
 
 if arguments.count >= 2 && arguments[1] == "render" {
     guard arguments.count >= 4 else {
         print("Usage: ensign-catalog render <sidc-list> <output-dir> [pixels]")
+        print("       ensign-catalog atlas <symbols.json> <output-dir> [point-size]")
         print("       ensign-catalog keys <sidc-list>")
         exit(2)
     }

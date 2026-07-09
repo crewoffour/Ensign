@@ -1,0 +1,324 @@
+{
+  "air-fixed-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 448,
+    "y" : 360
+  },
+  "air-fixed-hostile" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 536,
+    "y" : 360
+  },
+  "air-fixed-neutral" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 8,
+    "y" : 448
+  },
+  "air-fixed-unknown" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 96,
+    "y" : 448
+  },
+  "armor-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 96,
+    "y" : 96
+  },
+  "armor-hostile" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 184,
+    "y" : 96
+  },
+  "armor-neutral" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 272,
+    "y" : 96
+  },
+  "armor-unknown" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 360,
+    "y" : 96
+  },
+  "cbrn" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 184,
+    "y" : 536
+  },
+  "combatant-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 272,
+    "y" : 272
+  },
+  "combatant-hostile" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 360,
+    "y" : 272
+  },
+  "command-post" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 272,
+    "y" : 536
+  },
+  "engineer-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 8,
+    "y" : 184
+  },
+  "engineer-hostile" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 96,
+    "y" : 184
+  },
+  "fishing-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 96,
+    "y" : 360
+  },
+  "fishing-neutral" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 184,
+    "y" : 360
+  },
+  "infantry-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 360,
+    "y" : 8
+  },
+  "infantry-hostile" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 448,
+    "y" : 8
+  },
+  "infantry-neutral" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 536,
+    "y" : 8
+  },
+  "infantry-unknown" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 8,
+    "y" : 96
+  },
+  "land-unit-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 8,
+    "y" : 8
+  },
+  "land-unit-hostile" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 96,
+    "y" : 8
+  },
+  "land-unit-neutral" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 184,
+    "y" : 8
+  },
+  "land-unit-unknown" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 272,
+    "y" : 8
+  },
+  "medical-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 184,
+    "y" : 184
+  },
+  "medical-hostile" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 272,
+    "y" : 184
+  },
+  "merchant-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 448,
+    "y" : 272
+  },
+  "merchant-hostile" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 536,
+    "y" : 272
+  },
+  "merchant-neutral" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 8,
+    "y" : 360
+  },
+  "nav-hazard" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 536,
+    "y" : 448
+  },
+  "recon-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 448,
+    "y" : 96
+  },
+  "recon-hostile" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 536,
+    "y" : 96
+  },
+  "rotary-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 184,
+    "y" : 448
+  },
+  "rotary-hostile" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 272,
+    "y" : 448
+  },
+  "sar-datum" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 96,
+    "y" : 536
+  },
+  "sea-surface-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 536,
+    "y" : 184
+  },
+  "sea-surface-hostile" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 8,
+    "y" : 272
+  },
+  "sea-surface-neutral" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 96,
+    "y" : 272
+  },
+  "sea-surface-unknown" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 184,
+    "y" : 272
+  },
+  "submarine-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 272,
+    "y" : 360
+  },
+  "submarine-hostile" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 360,
+    "y" : 360
+  },
+  "survivor" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 8,
+    "y" : 536
+  },
+  "sustainment-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 360,
+    "y" : 184
+  },
+  "sustainment-hostile" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 448,
+    "y" : 184
+  },
+  "uav-friend" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 360,
+    "y" : 448
+  },
+  "uav-hostile" : {
+    "height" : 80,
+    "pixelRatio" : 2,
+    "width" : 80,
+    "x" : 448,
+    "y" : 448
+  }
+}
