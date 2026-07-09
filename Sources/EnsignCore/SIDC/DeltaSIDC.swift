@@ -14,7 +14,8 @@
 
 import Foundation
 
-/// A parsed 20-digit MIL-STD-2525D/E Symbol Identification Code.
+/// A parsed MIL-STD-2525D/E Symbol Identification Code of 20 digits,
+/// or 30 digits for full-length 2525E codes.
 ///
 /// Layout (1-based digit positions):
 ///
@@ -32,8 +33,11 @@ import Foundation
 /// | 15-16 | Entity subtype |
 /// | 17-18 | Sector 1 modifier |
 /// | 19-20 | Sector 2 modifier |
+/// | 21-30 | 2525E extension block (30-digit codes only), preserved
+///           raw in ``extensionDigits``; position 23 carries the 2525E
+///           frame shape modifier |
 public struct DeltaSIDC: Hashable, Sendable {
-    /// The 20-digit code as parsed.
+    /// The 20- or 30-digit code as parsed.
     public let raw: String
     /// Digits 1-2 as an integer, preserved even when the version is
     /// newer than this library knows about.
@@ -62,15 +66,20 @@ public struct DeltaSIDC: Hashable, Sendable {
     public let sectorOneModifier: String
     /// Digits 19-20.
     public let sectorTwoModifier: String
+    /// Digits 21-30 of a 30-digit 2525E code, or the empty string for
+    /// 20-digit codes. Preserved raw; the fields inside are decoded
+    /// lazily as the library grows support for them.
+    public let extensionDigits: String
 
-    /// Parses a delta-family SIDC string of exactly 20 decimal digits.
+    /// Parses a delta-family SIDC string of exactly 20 or 30 decimal
+    /// digits (the 30-digit form is the full-length 2525E code).
     /// - Throws: ``SIDCParseError``.
     public init(_ string: String) throws {
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed.count == 20 else {
+        guard trimmed.count == 20 || trimmed.count == 30 else {
             throw SIDCParseError.invalidLength(
                 found: trimmed.count,
-                expected: "exactly 20 digits for a 2525D/E code"
+                expected: "exactly 20 digits for a 2525D/E code, or 30 for a full-length 2525E code"
             )
         }
         let chars = Array(trimmed)
@@ -106,6 +115,17 @@ public struct DeltaSIDC: Hashable, Sendable {
         self.entitySubtype = String(chars[14...15])
         self.sectorOneModifier = String(chars[16...17])
         self.sectorTwoModifier = String(chars[18...19])
+        self.extensionDigits = chars.count == 30 ? String(chars[20...29]) : ""
+    }
+
+    /// The 2525E frame shape modifier (position 23 of a 30-digit code),
+    /// or `nil` when absent or not overriding ("0"). Parsed and
+    /// preserved; frame-shape override rendering is a future extension
+    /// tracked in the plan.
+    public var frameShapeModifier: Character? {
+        guard extensionDigits.count == 10 else { return nil }
+        let char = Array(extensionDigits)[2]
+        return char == "0" ? nil : char
     }
 
     /// The known specification version, or `nil` for version codes this

@@ -55,10 +55,10 @@ public enum SIDC: Hashable, Sendable {
 
         let isAllDigits = trimmed.allSatisfy { $0.isASCII && $0.isNumber }
         if isAllDigits {
-            guard trimmed.count == 20 else {
+            guard trimmed.count == 20 || trimmed.count == 30 else {
                 throw SIDCParseError.invalidLength(
                     found: trimmed.count,
-                    expected: "20 digits for a 2525D/E code, or a 10-15 character alphanumeric 2525C code"
+                    expected: "20 or 30 digits for a 2525D/E code, or a 10-15 character alphanumeric 2525C code"
                 )
             }
             self = .delta(try DeltaSIDC(trimmed))

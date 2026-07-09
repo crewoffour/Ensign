@@ -170,6 +170,74 @@ final class ComposerTests: XCTestCase {
         XCTAssertEqual(try MilSymbol("10012700000000000000").frame.shape, .quatrefoil)
     }
 
+    // MARK: - 30-character 2525E codes and maritime frame rules
+
+    func testThirtyCharacterCodesParseAndMatchTwentyCharacterEquivalents() throws {
+        // Beacon's atlas codes are full-length 2525E (30 digits).
+        let long = try MilSymbol("130310000012110000000000000000")
+        let short = try MilSymbol("13031000001211000000")
+        XCTAssertEqual(long.domain, .landUnit)
+        XCTAssertEqual(long.iconKey, IconKey(family: .delta, code: "10121100"))
+        XCTAssertEqual(long.frame, short.frame)
+        XCTAssertEqual(long.fillClass, short.fillClass)
+        XCTAssertEqual(long.iconKey, short.iconKey)
+        // Version 13 keeps the edition-aware suspect fill.
+        XCTAssertEqual(try MilSymbol("130530000014010000000000000000").fillClass, .suspect)
+        // 21 digits is still invalid.
+        XCTAssertThrowsError(try MilSymbol("130310000012110000000"))
+    }
+
+    func testFrameShapeModifierParsesFromExtensionBlock() throws {
+        guard case .delta(let plain) = try MilSymbol("130310000012110000000000000000").sidc else {
+            return XCTFail("expected delta")
+        }
+        XCTAssertEqual(plain.extensionDigits, "0000000000")
+        XCTAssertNil(plain.frameShapeModifier)
+        guard case .delta(let overridden) = try MilSymbol("130310000012110000000010000000").sidc else {
+            return XCTFail("expected delta")
+        }
+        XCTAssertEqual(overridden.frameShapeModifier, "1")
+        guard case .delta(let short) = try MilSymbol("13031000001211000000").sidc else {
+            return XCTFail("expected delta")
+        }
+        XCTAssertEqual(short.extensionDigits, "")
+        XCTAssertNil(short.frameShapeModifier)
+    }
+
+    func testSeaOwnTrackRendersUnframed() throws {
+        let ownTrack = try MilSymbol("10033000001500000000")
+        XCTAssertTrue(ownTrack.isOwnTrack)
+        XCTAssertFalse(ownTrack.frame.isFramed)
+        XCTAssertNotNil(ownTrack.frame.shape)
+        // An unframed symbol composes to its icon alone: no frame,
+        // fill, or overlay instructions ever. This holds whether or
+        // not the generated library currently carries the icon.
+        let geometry = SymbolComposer.geometry(for: ownTrack)
+        let icon = IconLibrary.instructions(
+            for: ownTrack.iconKey,
+            base: ownTrack.affiliation.frameBase
+        ) ?? []
+        XCTAssertEqual(geometry.instructions, icon,
+            "unframed symbols must compose to exactly their icon instructions")
+        // Ordinary sea tracks are unaffected.
+        XCTAssertFalse(try MilSymbol("10033000001201000000").isOwnTrack)
+        XCTAssertTrue(try MilSymbol("10033000001201000000").frame.isFramed)
+    }
+
+    func testFusedTracksForceThePendingDash() throws {
+        for sidc in ["10033000001600000000", "10033500001400000000", "10033500001500000000"] {
+            let symbol = try MilSymbol(sidc)
+            XCTAssertTrue(symbol.isFusedTrack, sidc)
+            XCTAssertEqual(symbol.frame.dash, .uncertainIdentity, sidc)
+            XCTAssertTrue(symbol.frame.isFramed, sidc)
+        }
+        // Fused rules are exact entity matches; neighbors are unaffected.
+        XCTAssertFalse(try MilSymbol("10033000001601000000").isFusedTrack)
+        XCTAssertFalse(try MilSymbol("10033500001401000000").isFusedTrack)
+        // A friend fused track is dashed despite the certain identity.
+        XCTAssertTrue(try MilSymbol("10033000001600000000").frame.isDashed)
+    }
+
     // MARK: - Fill classes and palette
 
     func testFillClassMapping() throws {

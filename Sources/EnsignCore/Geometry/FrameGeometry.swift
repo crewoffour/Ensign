@@ -372,30 +372,34 @@ public enum SymbolComposer {
         let base = symbol.affiliation.frameBase
         var instructions: [DrawInstruction] = []
 
-        // The frame itself: affiliation fill under a solid stroke.
-        instructions.append(instruction(for: shape, style: .frame))
+        if frame.isFramed {
+            // The frame itself: affiliation fill under a solid stroke.
+            instructions.append(instruction(for: shape, style: .frame))
 
-        // Filled overlays, painted in milsymbol order.
-        if frame.hasSpaceModifier {
-            instructions.append(.path(SymbolPath(
-                segments: FrameGeometry.spaceModifierSegments(base: base),
-                style: overlayFill
-            )))
-        }
-        if frame.hasActivityModifier {
-            instructions.append(.path(SymbolPath(
-                segments: FrameGeometry.activityModifierSegments(base: base),
-                style: overlayFill
-            )))
-        }
+            // Filled overlays, painted in milsymbol order.
+            if frame.hasSpaceModifier {
+                instructions.append(.path(SymbolPath(
+                    segments: FrameGeometry.spaceModifierSegments(base: base),
+                    style: overlayFill
+                )))
+            }
+            if frame.hasActivityModifier {
+                instructions.append(.path(SymbolPath(
+                    segments: FrameGeometry.activityModifierSegments(base: base),
+                    style: overlayFill
+                )))
+            }
 
-        // The dashed overlay is stroked on top of the solid frame.
-        if let dash = frame.dash {
-            instructions.append(instruction(
-                for: shape,
-                style: .frameDashOverlay(pattern: dash.pattern)
-            ))
+            // The dashed overlay is stroked on top of the solid frame.
+            if let dash = frame.dash {
+                instructions.append(instruction(
+                    for: shape,
+                    style: .frameDashOverlay(pattern: dash.pattern)
+                ))
+            }
         }
+        // Unframed symbols (sea own track) skip the frame, fill, and
+        // overlays entirely and render the icon alone.
 
         // The main icon paints last, matching milsymbol's part order
         // (its base geometry part emits the dash overlay before the

@@ -36,6 +36,11 @@ public struct FrameDescriptor: Hashable, Sendable {
     /// The outline to draw, or `nil` when the domain has no frame
     /// rendering defined (the symbol is parsed but unframeable).
     public let shape: FrameShape?
+    /// Whether the frame is drawn at all. Sea own tracks render icon
+    /// only, with no frame, fill, or overlays, per the standard and
+    /// milsymbol. Distinct from `shape == nil`: an unframed symbol has
+    /// a resolvable shape that is deliberately not drawn.
+    public let isFramed: Bool
     /// Whether the frame is drawn dashed. Equivalent to `dash != nil`.
     public let isDashed: Bool
     /// The dash treatment, or `nil` for a solid frame. Uncertain
@@ -164,12 +169,38 @@ public struct MilSymbol: Hashable, Sendable {
         }
     }
 
+    /// Whether this is a sea surface own track (delta set 30, entity
+    /// 150000), which 2525 renders unframed: icon only, no frame or
+    /// fill. Matches milsymbol's numbersidc metadata rule.
+    public var isOwnTrack: Bool {
+        if case .delta(let value) = sidc {
+            return value.symbolSetCode == "30" && value.entityCode == "150000"
+        }
+        return false
+    }
+
+    /// Whether this is a fused track (delta 30/160000, 35/140000, or
+    /// 35/150000), which always renders with the pending dashed frame
+    /// regardless of identity. Matches milsymbol's numbersidc metadata
+    /// rule.
+    public var isFusedTrack: Bool {
+        if case .delta(let value) = sidc {
+            switch (value.symbolSetCode, value.entityCode) {
+            case ("30", "160000"), ("35", "140000"), ("35", "150000"):
+                return true
+            default:
+                return false
+            }
+        }
+        return false
+    }
+
     /// The resolved frame descriptor.
     public var frame: FrameDescriptor {
         let base = affiliation.frameBase
         let resolvedDomain = domain
         let dash: FrameDash?
-        if affiliation.isUncertain {
+        if affiliation.isUncertain || isFusedTrack {
             dash = .uncertainIdentity
         } else if status == .anticipated {
             dash = .anticipatedStatus
@@ -178,6 +209,7 @@ public struct MilSymbol: Hashable, Sendable {
         }
         return FrameDescriptor(
             shape: FrameShape.resolve(base: base, domain: resolvedDomain),
+            isFramed: !isOwnTrack,
             isDashed: dash != nil,
             dash: dash,
             hasSpaceModifier: resolvedDomain == .space,

@@ -386,14 +386,19 @@ function roleTable(symbol) {
   };
   // Order matters: first entry wins for identical concrete colors.
   // iconColor is the icon linework (black). fillColor is the
-  // affiliation fill. iconFillColor is milsymbol's hollow-interior
-  // fill, the light color that makes icons like the civilian vessel
-  // read against the affiliation fill; that is Ensign's contrast
-  // role. When iconFillColor happens to equal fillColor, the earlier
-  // affiliationFill entry wins, which renders identically.
+  // affiliation fill. iconFillColor is context-dependent in milsymbol:
+  // on framed symbols its concrete value is the light hollow-interior
+  // color that reads against the affiliation fill (Ensign's contrast
+  // role); on unframed symbols (sea own track) there is no colored
+  // frame, so iconFillColor carries the affiliation color itself and
+  // the icon wears the affiliation (Ensign's affiliationFill role,
+  // which also keeps unframed icons palette-aware). When iconFillColor
+  // happens to equal fillColor, the earlier affiliationFill entry
+  // wins, which renders identically.
   put(colors.iconColor?.[affiliation], "icon");
   put(colors.fillColor?.[affiliation], "affiliationFill");
-  put(colors.iconFillColor?.[affiliation], "contrastFill");
+  put(colors.iconFillColor?.[affiliation],
+    symbol.unframed ? "affiliationFill" : "contrastFill");
   put(colors.white?.[affiliation], "contrastFill");
   put(colors.frameColor?.[affiliation], "frameStroke");
   put("black", "icon");

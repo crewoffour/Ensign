@@ -138,7 +138,13 @@ func runRenderMode(listPath: String, outputDir: String, pixels: Int) {
         do {
             let symbol = try MilSymbol(sidc)
             guard let data = renderer.pngData(for: symbol, size: pixels) else {
-                print("SKIP \(sidc): no frame rendering defined for this domain")
+                if symbol.frame.shape == nil {
+                    print("SKIP \(sidc): no frame rendering defined for this domain")
+                } else if !symbol.frame.isFramed {
+                    print("SKIP \(sidc): unframed symbol (icon only) and its icon is not in the library yet; run the icon pipeline to add it")
+                } else {
+                    print("SKIP \(sidc): nothing to render")
+                }
                 skipped += 1
                 continue
             }

@@ -72,29 +72,50 @@ function extractOne(sidc) {
     // concrete colors in the icon instructions are exactly the colors
     // a reference render uses; no option-dependent color distortion
     // can creep in.
+    //
+    // Symbols milsymbol itself renders unframed (sea own track:
+    // metadata.frame false) have no frame instructions to subtract;
+    // the full build IS the icon, and Ensign reproduces milsymbol's
+    // unframed rendering by construction.
     const fullOptions = { size: 100, infoFields: false };
     if (args.standard) fullOptions.standard = args.standard;
     const full = new ms.Symbol(sidc, fullOptions);
-    const frameOnly = new ms.Symbol(sidc, { ...fullOptions, icon: false });
-    if (!isInstructionPrefix(frameOnly.drawInstructions, full.drawInstructions)) {
-      throw new Error(
-        "frame-only instructions are not a prefix of the full " +
-        "instructions; the SIDC likely carries modifiers drawn after " +
-        "the icon, which icon extraction does not support yet"
-      );
-    }
-    const iconInstructions = full.drawInstructions.slice(frameOnly.drawInstructions.length);
     const metadata = full.getMetadata();
+
+    let iconInstructions;
+    let frameInstructionCount;
+    if (metadata.frame === false) {
+      iconInstructions = full.drawInstructions;
+      frameInstructionCount = 0;
+    } else {
+      const frameOnly = new ms.Symbol(sidc, { ...fullOptions, icon: false });
+      if (!isInstructionPrefix(frameOnly.drawInstructions, full.drawInstructions)) {
+        const error = new Error(
+          "frame-only instructions are not a prefix of the full " +
+          "instructions; the SIDC likely carries modifiers drawn after " +
+          "the icon, which icon extraction does not support yet"
+        );
+        error.diagnostics = {
+          frameOnlyInstructions: frameOnly.drawInstructions,
+          fullInstructions: full.drawInstructions,
+        };
+        throw error;
+      }
+      iconInstructions = full.drawInstructions.slice(frameOnly.drawInstructions.length);
+      frameInstructionCount = frameOnly.drawInstructions.length;
+    }
+
     return {
       sidc,
       valid: full.isValid(),
       validIcon: full.validIcon,
+      unframed: metadata.frame === false,
       bbox: { x1: full.bbox.x1, y1: full.bbox.y1, x2: full.bbox.x2, y2: full.bbox.y2 },
       anchor: full.getAnchor(),
       octagonAnchor: full.getOctagonAnchor(),
       metadata: metadataSubset(metadata),
       colors: full.getColors(),
-      frameInstructionCount: frameOnly.drawInstructions.length,
+      frameInstructionCount,
       drawInstructions: iconInstructions,
     };
   }
@@ -157,7 +178,9 @@ function main() {
     try {
       symbols.push(extractOne(sidc));
     } catch (error) {
-      failures.push({ sidc, error: String(error) });
+      const failure = { sidc, error: String(error) };
+      if (error.diagnostics) failure.diagnostics = error.diagnostics;
+      failures.push(failure);
       console.error(`FAILED ${sidc}: ${error}`);
     }
   }

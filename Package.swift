@@ -54,5 +54,10 @@ let package = Package(
             name: "EnsignCoreTests",
             dependencies: ["EnsignCore"]
         ),
+        .testTarget(
+            name: "EnsignRenderTests",
+            dependencies: ["EnsignRender"],
+            resources: [.copy("Snapshots")]
+        ),
     ]
 )
