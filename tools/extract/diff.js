@@ -44,8 +44,28 @@ function pngFiles(dir) {
 }
 
 function main() {
-  const refNames = pngFiles(args.refs);
-  const candidateNames = pngFiles(args.candidates);
+  let refNames = pngFiles(args.refs);
+  let candidateNames = pngFiles(args.candidates);
+
+  // With --sidcs, compare exactly the worklist: stale files from
+  // earlier runs with different lists never enter the comparison, and
+  // a worklist entry missing on either side is reported loudly.
+  if (args.sidcs) {
+    const wanted = new Set(
+      readFileSync(args.sidcs, "utf8")
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line && !line.startsWith("#"))
+        .map((sidc) => `${sidc}.png`)
+    );
+    for (const name of wanted) {
+      if (!refNames.has(name)) console.warn(`MISSING reference for ${name}`);
+      if (!candidateNames.has(name)) console.warn(`MISSING candidate for ${name}`);
+    }
+    refNames = new Set([...refNames].filter((name) => wanted.has(name)));
+    candidateNames = new Set([...candidateNames].filter((name) => wanted.has(name)));
+  }
+
   mkdirSync(args.out, { recursive: true });
 
   const shared = [...refNames].filter((name) => candidateNames.has(name)).sort();

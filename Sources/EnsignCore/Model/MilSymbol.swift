@@ -169,6 +169,16 @@ public struct MilSymbol: Hashable, Sendable {
         }
     }
 
+    /// The mobility indicator, when present. Decoded from the delta
+    /// amplifier pair; the charlie mobility encoding is deferred until
+    /// the first charlie consumer needs it.
+    public var mobility: Mobility? {
+        if case .delta(let value) = sidc {
+            return Mobility(deltaAmplifier: value.amplifier)
+        }
+        return nil
+    }
+
     /// Whether this is a sea surface own track (delta set 30, entity
     /// 150000), which 2525 renders unframed: icon only, no frame or
     /// fill. Matches milsymbol's numbersidc metadata rule.

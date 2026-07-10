@@ -24,15 +24,16 @@ extension MilSymbol {
     /// share it across every track that resolves to it.
     ///
     /// The key covers everything the composer currently draws: icon
-    /// identity, frame base, fill class, dash treatment, framing, and
-    /// the space and activity overlays. It is deliberately versioned
-    /// ("ensign1") because new rendered features (echelons, HQ staffs)
-    /// will extend it; do not persist render keys across app versions
+    /// identity, frame base, fill class, dash treatment, framing, the
+    /// space and activity overlays, and the frame amplifiers (HQ/task
+    /// force/feint-dummy flags, echelon, mobility). It is deliberately versioned
+    /// ("ensign2" since the amplifier stage joined the rendering)
+    /// because new rendered features will extend it; do not persist render keys across app versions
     /// before Ensign 1.0.
     public var renderKey: String {
         let descriptor = frame
         var parts = [
-            "ensign1",
+            "ensign2",
             iconKey.family.rawValue,
             iconKey.code,
             String(describing: affiliation.frameBase),
@@ -48,6 +49,12 @@ extension MilSymbol {
             }
             if descriptor.hasSpaceModifier { parts.append("space") }
             if descriptor.hasActivityModifier { parts.append("activity") }
+            let hqtfd = headquartersTaskForceDummy
+            if hqtfd.contains(.headquarters) { parts.append("hq") }
+            if hqtfd.contains(.taskForce) { parts.append("tf") }
+            if hqtfd.contains(.feintDummy) { parts.append("fd") }
+            if let echelon { parts.append("e-\(String(describing: echelon))") }
+            if let mobility { parts.append("m-\(String(describing: mobility))") }
         }
         return parts.joined(separator: ":")
     }

@@ -280,6 +280,70 @@ final class ComposerTests: XCTestCase {
         XCTAssertTrue(try MilSymbol("10034000000000000000").renderKey.contains("activity"))
     }
 
+    // MARK: - Frame amplifiers (Session 7a)
+
+    func testAmplifierDecoding() throws {
+        XCTAssertEqual(try MilSymbol("10031000331211000000").mobility, .tracked)
+        XCTAssertEqual(try MilSymbol("10031500511301000000").mobility, .barge)
+        XCTAssertEqual(try MilSymbol("10031500611301000000").mobility, .shortTowedArray)
+        // 38 and 39 are unassigned in milsymbol's mapping: no mark.
+        XCTAssertNil(try MilSymbol("10031500381301000000").mobility)
+        XCTAssertNil(try MilSymbol("10031000161211000000").mobility)
+        XCTAssertEqual(try MilSymbol("10031000161211000000").echelon, .battalionSquadron)
+        XCTAssertEqual(
+            try MilSymbol("10031007001211000000").headquartersTaskForceDummy,
+            [.feintDummy, .taskForce, .headquarters])
+    }
+
+    func testAmplifiersComposeAfterFrameAndIcon() throws {
+        // A plain friend land unit frame composes to one instruction;
+        // each amplifier adds its marks on top, in order.
+        let plain = SymbolComposer.geometry(for: try MilSymbol("10031000000000000000"))
+        XCTAssertEqual(plain.instructions.count, 1)
+
+        // HQ + TF + FD (digit 7): staff, bracket, caret.
+        let hqtfd = SymbolComposer.geometry(for: try MilSymbol("10031007000000000000"))
+        XCTAssertEqual(hqtfd.instructions.count, 4)
+        // The caret is dashed with milsymbol's feint/dummy pattern.
+        guard case .path(let caret) = hqtfd.instructions[3] else {
+            return XCTFail("expected the caret last")
+        }
+        XCTAssertEqual(caret.style.dash, [8, 8])
+
+        // Battalion echelon: two vertical bars.
+        let battalion = SymbolComposer.geometry(for: try MilSymbol("10031000160000000000"))
+        XCTAssertEqual(battalion.instructions.count, 3)
+
+        // Tracked equipment: one capsule path below the frame.
+        let tracked = SymbolComposer.geometry(for: try MilSymbol("10031500330000000000"))
+        XCTAssertEqual(tracked.instructions.count, 2)
+
+        // The installation bar appears for the installation symbol set
+        // and is filled with the frame color role.
+        let installation = SymbolComposer.geometry(for: try MilSymbol("10032000000000000000"))
+        XCTAssertEqual(installation.instructions.count, 2)
+        guard case .path(let bar) = installation.instructions[1] else {
+            return XCTFail("expected the bar")
+        }
+        XCTAssertEqual(bar.style.fill, .frameStroke)
+
+        // Amplifiers extend the extent (the HQ staff reaches 100 units
+        // below the frame), so tight-fit rendering absorbs them.
+        let staffExtent = try XCTUnwrap(
+            SymbolComposer.geometry(for: try MilSymbol("10031002000000000000")).extent)
+        XCTAssertGreaterThan(staffExtent.y2, 200)
+    }
+
+    func testRenderKeyCoversAmplifiers() throws {
+        let plain = try MilSymbol("10031000001211000000").renderKey
+        XCTAssertTrue(plain.hasPrefix("ensign2:"))
+        let battalionHQ = try MilSymbol("10031002161211000000").renderKey
+        XCTAssertTrue(battalionHQ.contains("hq"))
+        XCTAssertTrue(battalionHQ.contains("e-battalionSquadron"))
+        XCTAssertNotEqual(plain, battalionHQ)
+        XCTAssertTrue(try MilSymbol("10031500331301000000").renderKey.contains("m-tracked"))
+    }
+
     // MARK: - Fill classes and palette
 
     func testFillClassMapping() throws {

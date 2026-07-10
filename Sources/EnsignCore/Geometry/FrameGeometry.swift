@@ -408,6 +408,42 @@ public enum SymbolComposer {
             instructions.append(contentsOf: icon)
         }
 
+        // Frame amplifiers, in milsymbol's modifier emission order:
+        // headquarters staff, task force bracket, installation bar,
+        // feint/dummy caret, echelon, mobility. Every part positions
+        // off the original frame bounds, exactly as milsymbol does.
+        // Amplifiers apply only to framed symbols.
+        if frame.isFramed {
+            let bounds = FrameGeometry.bounds(for: shape)
+            let hqtfd = symbol.headquartersTaskForceDummy
+            let isInstallation = symbol.domain == .landInstallation
+
+            if hqtfd.contains(.headquarters) {
+                instructions.append(
+                    ModifierGeometry.headquartersStaff(shape: shape, bounds: bounds))
+            }
+            if hqtfd.contains(.taskForce) {
+                instructions.append(
+                    ModifierGeometry.taskForceBracket(bounds: bounds, echelon: symbol.echelon))
+            }
+            if isInstallation {
+                instructions.append(
+                    ModifierGeometry.installationBar(shape: shape, base: base, bounds: bounds))
+            }
+            if hqtfd.contains(.feintDummy) {
+                instructions.append(
+                    ModifierGeometry.feintDummyCaret(bounds: bounds))
+            }
+            if let echelon = symbol.echelon {
+                instructions.append(contentsOf: ModifierGeometry.echelonMark(
+                    echelon, bounds: bounds, installationPresent: isInstallation))
+            }
+            if let mobility = symbol.mobility {
+                instructions.append(contentsOf: ModifierGeometry.mobilityMark(
+                    mobility, base: base, bounds: bounds))
+            }
+        }
+
         return SymbolGeometry(instructions: instructions)
     }
 

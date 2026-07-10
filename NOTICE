@@ -7,8 +7,11 @@ Licensed under the Apache License, Version 2.0.
 Third-party attributions
 ------------------------
 The frame outline geometry, frame overlay geometry (space bar and
-activity corner brackets), standard fill palettes (light, medium, and
-dark color modes), and frame dash patterns in EnsignCore are ported
+activity corner brackets), frame amplifier geometry (headquarters
+staff, task force bracket, installation bar, feint/dummy caret,
+echelon marks, and mobility indicators), standard fill palettes
+(light, medium, and dark color modes), and frame dash patterns in
+EnsignCore are ported
 from milsymbol (https://github.com/spatialillusions/milsymbol),
 Copyright (c) Mans Beckman, spatialillusions.com, and are used under
 the MIT License:
@@ -38,8 +41,8 @@ the MIT License:
   SOFTWARE.
 
 The files containing ported data carry a pointer to this NOTICE in
-their headers (FrameGeometry.swift, SymbolPalette.swift, and the
-generated GeneratedIcons.swift).
+their headers (FrameGeometry.swift, ModifierGeometry.swift,
+SymbolPalette.swift, and the generated GeneratedIcons.swift).
 
 Some generated icon geometry includes glyph outlines converted from
 the Liberation Sans typeface (https://github.com/liberationfonts),
