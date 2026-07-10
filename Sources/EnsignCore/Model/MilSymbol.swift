@@ -138,10 +138,11 @@ public struct MilSymbol: Hashable, Sendable {
         return nil
     }
 
-    /// Whether the frame renders with the affiliation fill. Kept for
-    /// unfilled rendering variants; no delta symbol set currently
-    /// reaches the unfilled-frame path (mine warfare turned out to be
-    /// unframed, not unfilled; see rendersUnframed).
+    /// Whether the frame renders with the affiliation fill. Mine
+    /// warfare (delta set 36) is framed but unfilled per milsymbol's
+    /// metadata (frame true, fill false): the frame outline and icons
+    /// carry the saturated affiliation colors instead of the pastel
+    /// fills. The charlie mine warfare encoding is deferred.
     public var isFilled: Bool {
         if case .delta(let value) = sidc {
             return value.symbolSetCode != "36"
@@ -149,16 +150,9 @@ public struct MilSymbol: Hashable, Sendable {
         return true
     }
 
-    /// Whether this symbol renders without any frame: sea own tracks
-    /// and mine warfare points (delta set 36), which milsymbol marks
-    /// frame-false and renders icon-only, exactly like control
-    /// measures. Oracle-verified: bare set 36 codes render nothing.
+    /// Whether this symbol renders without any frame (sea own tracks).
     public var rendersUnframed: Bool {
-        if isOwnTrack { return true }
-        if case .delta(let value) = sidc {
-            return value.symbolSetCode == "36"
-        }
-        return false
+        isOwnTrack
     }
 
     /// The exercise amplifier letter drawn beside the frame, when any:
@@ -211,14 +205,27 @@ public struct MilSymbol: Hashable, Sendable {
         }
     }
 
-    /// The mobility indicator, when present. Decoded from the delta
-    /// amplifier pair; the charlie mobility encoding is deferred until
-    /// the first charlie consumer needs it.
+    /// The mobility indicator, when present, decoded from either
+    /// dialect: the delta amplifier pair or the charlie M/N symbol
+    /// modifier codes.
     public var mobility: Mobility? {
-        if case .delta(let value) = sidc {
+        switch sidc {
+        case .delta(let value):
             return Mobility(deltaAmplifier: value.amplifier)
+        case .charlie(let value):
+            return Mobility(charlieModifier: value.symbolModifier)
         }
-        return nil
+    }
+
+    /// Whether the installation bar renders: the delta installation
+    /// symbol set, or the charlie H symbol modifier that marks any
+    /// symbol as an installation.
+    public var isInstallation: Bool {
+        if domain == .landInstallation { return true }
+        if case .charlie(let value) = sidc {
+            return value.isInstallationModifier
+        }
+        return false
     }
 
     /// Whether this is a sea surface own track (delta set 30, entity

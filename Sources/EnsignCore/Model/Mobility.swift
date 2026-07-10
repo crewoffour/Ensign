@@ -38,6 +38,30 @@ public enum Mobility: Hashable, Sendable, CaseIterable {
     case shortTowedArray
     case longTowedArray
 
+    /// Decodes a 2525C symbol modifier pair (positions 11-12): the
+    /// M-prefixed mobility codes and N-prefixed towed arrays. The
+    /// MU/MV/MW assignments (over snow, sled, pack animals) follow the
+    /// 2525C table as best reconstructed and are oracle-verified; if
+    /// the oracle disagrees, fix the mapping here, not the geometry.
+    public init?(charlieModifier: String) {
+        switch charlieModifier {
+        case "MO": self = .wheeledLimitedCrossCountry
+        case "MP": self = .wheeledCrossCountry
+        case "MQ": self = .tracked
+        case "MR": self = .wheeledAndTracked
+        case "MS": self = .towed
+        case "MT": self = .rail
+        case "MU": self = .overSnow
+        case "MV": self = .sled
+        case "MW": self = .packAnimals
+        case "MX": self = .barge
+        case "MY": self = .amphibious
+        case "NS": self = .shortTowedArray
+        case "NL": self = .longTowedArray
+        default: return nil
+        }
+    }
+
     /// Decodes a 2525D amplifier pair (digits 9-10).
     public init?(deltaAmplifier: String) {
         switch deltaAmplifier {

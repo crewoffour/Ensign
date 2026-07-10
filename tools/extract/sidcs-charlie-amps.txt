@@ -1,0 +1,32 @@
+# Session 8b oracle worklist: charlie-dialect amplifiers on land
+# equipment and unit frames. Entity-free function IDs (no icons), so
+# reference-render + catalog render + diff --sidcs directly.
+
+# Charlie mobility codes MO-MY on friend land equipment
+SFGPE-----MO---
+SFGPE-----MP---
+SFGPE-----MQ---
+SFGPE-----MR---
+SFGPE-----MS---
+SFGPE-----MT---
+SFGPE-----MU---
+SFGPE-----MV---
+SFGPE-----MW---
+SFGPE-----MX---
+SFGPE-----MY---
+
+# Towed arrays
+SFGPE-----NS---
+SFGPE-----NL---
+
+# Neutral square adjustments through the charlie path
+SNGPE-----MS---
+SNGPE-----MU---
+SNGPE-----MX---
+SNGPE-----NS---
+
+# Charlie installation modifier (H) and HQ/echelon spot checks
+SFGPI-----H----
+SFGPU-----A----
+SFGPU------F---
+SFGPU-----AF---

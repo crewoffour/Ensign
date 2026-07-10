@@ -395,12 +395,17 @@ function roleTable(symbol) {
   // which also keeps unframed icons palette-aware). When iconFillColor
   // happens to equal fillColor, the earlier affiliationFill entry
   // wins, which renders identically.
-  put(colors.iconColor?.[affiliation], "icon");
+  // Unfilled symbols (metadata.fill false: mine warfare) color their
+  // linework with the saturated affiliation set instead of black and
+  // the pastels; those concrete colors map to the affiliationColor
+  // role so palettes stay in charge.
+  const filled = symbol.metadata?.fill !== false;
+  put(colors.iconColor?.[affiliation], filled ? "icon" : "affiliationColor");
   put(colors.fillColor?.[affiliation], "affiliationFill");
   put(colors.iconFillColor?.[affiliation],
     symbol.unframed ? "affiliationFill" : "contrastFill");
   put(colors.white?.[affiliation], "contrastFill");
-  put(colors.frameColor?.[affiliation], "frameStroke");
+  put(colors.frameColor?.[affiliation], filled ? "frameStroke" : "affiliationColor");
   put("black", "icon");
   put("white", "contrastFill");
   return table;
@@ -412,8 +417,7 @@ function fillRole(value, table, sidc, context) {
   if (normalized === null) return ".none";
   const role = table.get(normalized);
   if (!role) {
-    problem(sidc, `unmapped fill color "${value}" on ${context}`);
-    return ".none";
+    return literalRole(normalized, value, sidc, context);
   }
   return role === "icon" ? ".iconFill" : `.${role}`;
 }
@@ -424,10 +428,24 @@ function strokeRole(value, table, sidc, context) {
   if (normalized === null) return ".none";
   const role = table.get(normalized);
   if (!role) {
-    problem(sidc, `unmapped stroke color "${value}" on ${context}`);
-    return ".none";
+    return literalRole(normalized, value, sidc, context);
   }
   return role === "icon" ? ".iconStroke" : `.${role}`;
+}
+
+// Colors outside the role tables are fixed, palette-independent icon
+// colors (mine warfare red, per MEDAL coloring). They emit as
+// literals, noted so eyes stay on them: an affiliation-dependent
+// color wrongly landing here would break per-base deduplication and
+// surface there and in the oracle.
+function literalRole(normalized, value, sidc, context) {
+  const rgb = normalized.match(/^rgb\((\d+),(\d+),(\d+)\)$/);
+  if (!rgb) {
+    problem(sidc, `unmapped, unparseable color "${value}" on ${context}`);
+    return ".none";
+  }
+  console.warn(`NOTE ${sidc}: literal color ${normalized} on ${context}`);
+  return `.literal(.rgb255(${rgb[1]}, ${rgb[2]}, ${rgb[3]}))`;
 }
 
 // ---------------------------------------------------------------------------

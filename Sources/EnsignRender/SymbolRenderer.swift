@@ -84,17 +84,34 @@ public struct SymbolRenderer: Sendable {
         context.translateBy(x: 0, y: CGFloat(size))
         context.scaleBy(x: 1, y: -1)
 
+        draw(geometry, fillClass: fillClass, in: context, pixelSize: CGFloat(size), fit: fit)
+        return context.makeImage()
+    }
+
+    /// Draws geometry into a context whose current transform maps a
+    /// top-left-origin square of `pixelSize` points, honoring the fit:
+    /// full canvas keeps the authored margins; tight scales the drawn
+    /// extent to fill the square, aspect-preserved and centered (the
+    /// choice for tall amplified symbols that overflow the authored
+    /// canvas).
+    public func draw(
+        _ geometry: SymbolGeometry,
+        fillClass: FillClass,
+        in context: CGContext,
+        pixelSize: CGFloat,
+        fit: SpriteFit
+    ) {
         switch fit {
         case .fullCanvas:
-            draw(geometry, fillClass: fillClass, in: context, pixelSize: CGFloat(size))
+            draw(geometry, fillClass: fillClass, in: context, pixelSize: pixelSize)
         case .tight:
-            guard let extent = geometry.extent else { return nil }
+            guard let extent = geometry.extent else { return }
             let width = extent.x2 - extent.x1
             let height = extent.y2 - extent.y1
-            guard width > 0 || height > 0 else { return nil }
-            let scale = CGFloat(size) / CGFloat(max(width, height))
-            let offsetX = (CGFloat(size) - CGFloat(width) * scale) / 2
-            let offsetY = (CGFloat(size) - CGFloat(height) * scale) / 2
+            guard width > 0 || height > 0 else { return }
+            let scale = pixelSize / CGFloat(max(width, height))
+            let offsetX = (pixelSize - CGFloat(width) * scale) / 2
+            let offsetY = (pixelSize - CGFloat(height) * scale) / 2
             context.saveGState()
             context.translateBy(
                 x: offsetX - CGFloat(extent.x1) * scale,
@@ -104,7 +121,6 @@ public struct SymbolRenderer: Sendable {
             drawInstructions(geometry, fillClass: fillClass, in: context)
             context.restoreGState()
         }
-        return context.makeImage()
     }
 
     /// Encodes a rendered symbol as PNG data. Convenience for tooling,

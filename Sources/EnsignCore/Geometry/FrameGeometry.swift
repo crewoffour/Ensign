@@ -402,8 +402,14 @@ public enum SymbolComposer {
             if symbol.isFilled {
                 instructions.append(instruction(for: shape, style: .frame))
             } else {
+                // Unfilled frames differ from filled ones only in the
+                // solid outline's color: the saturated affiliation
+                // color instead of black-over-fill. The contrast dash
+                // overlay below applies unchanged (oracle-verified:
+                // the reference dashes unfilled frames by overlaying
+                // white, revealing the color in the overlay's gaps).
                 instructions.append(instruction(for: shape, style: DrawStyle(
-                    stroke: .frameStroke, strokeWidth: 4)))
+                    stroke: .affiliationColor, strokeWidth: 4)))
             }
 
             // Filled overlays, painted in milsymbol order.
@@ -420,21 +426,13 @@ public enum SymbolComposer {
                 )))
             }
 
-            // The dashed overlay is stroked on top of the solid frame.
-            // On unfilled frames there is no fill to contrast against,
-            // so the affiliation color carries the overlay (the same
-            // principle as unframed icons).
+            // The dashed overlay is stroked on top of the solid frame,
+            // filled or not.
             if let dash = frame.dash {
-                if symbol.isFilled {
-                    instructions.append(instruction(
-                        for: shape,
-                        style: .frameDashOverlay(pattern: dash.pattern)
-                    ))
-                } else {
-                    instructions.append(instruction(for: shape, style: DrawStyle(
-                        stroke: .affiliationFill, strokeWidth: 5,
-                        dash: dash.pattern)))
-                }
+                instructions.append(instruction(
+                    for: shape,
+                    style: .frameDashOverlay(pattern: dash.pattern)
+                ))
             }
         }
         // Unframed symbols (sea own track) skip the frame, fill, and
@@ -470,7 +468,7 @@ public enum SymbolComposer {
         if frame.isFramed {
             let bounds = FrameGeometry.bounds(for: shape)
             let hqtfd = symbol.headquartersTaskForceDummy
-            let isInstallation = symbol.domain == .landInstallation
+            let isInstallation = symbol.isInstallation
 
             // Dismounted leadership: friendly affiliations only, per
             // milsymbol; both leadership codes render the same chevron.
@@ -516,17 +514,32 @@ public enum SymbolComposer {
         // approximating milsymbol's iconBottom.
         if let conditionRole = Self.conditionRole(for: symbol.status),
            !instructions.isEmpty {
-            let frameBounds = FrameGeometry.bounds(for: shape)
-            var yBase: Double
-            if frame.isFramed {
-                yBase = frameBounds.y2
-            } else {
-                yBase = SymbolGeometry(instructions: instructions).extent?.y2
-                    ?? frameBounds.y2
+            // Unfilled symbols take the slash treatment in the
+            // saturated color (oracle-verified); damaged and destroyed
+            // are the only conditions with slash forms.
+            if !symbol.isFilled {
+                if symbol.status == .presentDamaged || symbol.status == .presentDestroyed {
+                    instructions.append(contentsOf: ModifierGeometry.conditionSlashes(
+                        destroyed: symbol.status == .presentDestroyed,
+                        stroke: .affiliationColor))
+                }
+                return SymbolGeometry(instructions: instructions)
             }
+            // Framed symbols size and place the bar from the frame
+            // bounds; unframed symbols use the icon extent for both,
+            // approximating milsymbol's icon bbox.
+            let barBounds: FrameBounds
+            if frame.isFramed {
+                barBounds = FrameGeometry.bounds(for: shape)
+            } else {
+                barBounds = SymbolGeometry(instructions: instructions).extent
+                    ?? FrameGeometry.bounds(for: shape)
+            }
+            var yBase = barBounds.y2
             yBase += symbol.mobility != nil ? 25 : 5
             instructions.append(ModifierGeometry.conditionBar(
-                role: conditionRole, bounds: frameBounds, yBase: yBase))
+                role: conditionRole, bounds: barBounds, yBase: yBase,
+                stroke: symbol.isFilled ? .frameStroke : .affiliationColor))
         }
 
         return SymbolGeometry(instructions: instructions)

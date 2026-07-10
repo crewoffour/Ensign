@@ -58,7 +58,8 @@ public enum ModifierGeometry {
     public static func conditionBar(
         role: ColorRole,
         bounds: FrameBounds,
-        yBase: Double
+        yBase: Double,
+        stroke: ColorRole = .frameStroke
     ) -> DrawInstruction {
         let width = bounds.x2 - bounds.x1
         return .path(SymbolPath(segments: [
@@ -67,14 +68,17 @@ public enum ModifierGeometry {
             .line(to: SymbolPoint(bounds.x1 + width, yBase + 25)),
             .line(to: SymbolPoint(bounds.x1, yBase + 25)),
             .close,
-        ], style: DrawStyle(fill: role, stroke: .frameStroke, strokeWidth: 4)))
+        ], style: DrawStyle(fill: role, stroke: stroke, strokeWidth: 4)))
     }
 
     /// The condition slashes for unfilled symbols: one diagonal for
     /// damaged, both for destroyed, at double stroke width in the
     /// frame color, in fixed canvas coordinates.
-    public static func conditionSlashes(destroyed: Bool) -> [DrawInstruction] {
-        let style = DrawStyle(stroke: .frameStroke, strokeWidth: 8)
+    public static func conditionSlashes(
+        destroyed: Bool,
+        stroke: ColorRole = .frameStroke
+    ) -> [DrawInstruction] {
+        let style = DrawStyle(stroke: stroke, strokeWidth: 8)
         var instructions: [DrawInstruction] = [
             .path(SymbolPath(segments: [
                 .move(to: SymbolPoint(150, 20)),

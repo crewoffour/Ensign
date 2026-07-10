@@ -14,7 +14,7 @@
 //
 // GENERATED FILE - do not edit by hand.
 // Produced by tools/extract/codegen.js from milsymbol 3.0.4
-// draw instructions (21 icons). Icon geometry data is ported
+// draw instructions (23 icons). Icon geometry data is ported
 // from milsymbol (https://github.com/spatialillusions/milsymbol),
 // Copyright (c) Mans Beckman, MIT License. See NOTICE.
 
@@ -22,7 +22,7 @@ extension IconLibrary {
     /// The generated icon table.
     static let generatedIcons: [IconKey: IconEntry] = {
         var table: [IconKey: IconEntry] = [:]
-        table.reserveCapacity(21)
+        table.reserveCapacity(23)
         table[IconKey(family: .delta, code: "01110100")] = .universal(icon_delta_01110100())
         table[IconKey(family: .delta, code: "01110200")] = .universal(icon_delta_01110200())
         table[IconKey(family: .delta, code: "01110300")] = .universal(icon_delta_01110300())
@@ -34,6 +34,7 @@ extension IconLibrary {
         table[IconKey(family: .delta, code: "10141801")] = .universal(icon_delta_10141801())
         table[IconKey(family: .delta, code: "10160000")] = .universal(icon_delta_10160000())
         table[IconKey(family: .delta, code: "10161300")] = .perBase([.friend: icon_delta_10161300_friend(), .hostile: icon_delta_10161300_hostile(), .neutral: icon_delta_10161300_neutral(), .unknown: icon_delta_10161300_unknown()])
+        table[IconKey(family: .delta, code: "20110600")] = .universal(icon_delta_20110600())
         table[IconKey(family: .delta, code: "25130300")] = .universal(icon_delta_25130300())
         table[IconKey(family: .delta, code: "25160100")] = .universal(icon_delta_25160100())
         table[IconKey(family: .delta, code: "30120000")] = .universal(icon_delta_30120000())
@@ -44,6 +45,7 @@ extension IconLibrary {
         table[IconKey(family: .delta, code: "35110100")] = .universal(icon_delta_35110100())
         table[IconKey(family: .delta, code: "35140000")] = .universal(icon_delta_35140000())
         table[IconKey(family: .delta, code: "35150000")] = .universal(icon_delta_35150000())
+        table[IconKey(family: .delta, code: "36110100")] = .perBase([.friend: icon_delta_36110100_friend(), .hostile: icon_delta_36110100_hostile(), .neutral: icon_delta_36110100_neutral(), .unknown: icon_delta_36110100_unknown()])
         return table
     }()
 
@@ -485,6 +487,18 @@ extension IconLibrary {
         ], style: DrawStyle(fill: .iconFill, stroke: .iconStroke, strokeWidth: 3, dash: nil))),
     ] }
 
+    // 130420000011060000000000000000, 130320000011060000000000000000
+    private static func icon_delta_20110600() -> [DrawInstruction] { [
+        .path(SymbolPath(segments: [
+            .move(to: SymbolPoint(74, 120)),
+            .curve(to: SymbolPoint(139, 84), control1: SymbolPoint(74, 105), control2: SymbolPoint(87.2, 87.1)),
+            .move(to: SymbolPoint(126, 120)),
+            .curve(to: SymbolPoint(61.5, 84), control1: SymbolPoint(126, 105), control2: SymbolPoint(113, 87.1)),
+        ], style: DrawStyle(fill: .none, stroke: .iconStroke, strokeWidth: 3, dash: nil))),
+        .circle(center: SymbolPoint(65, 90), radius: 6, style: DrawStyle(fill: .iconFill, stroke: .iconStroke, strokeWidth: 3, dash: nil)),
+        .circle(center: SymbolPoint(135, 90), radius: 6, style: DrawStyle(fill: .iconFill, stroke: .iconStroke, strokeWidth: 3, dash: nil)),
+    ] }
+
     // 130425000013030000000000000000, 130325000013030000000000000000
     private static func icon_delta_25130300() -> [DrawInstruction] { [
         .path(SymbolPath(segments: [
@@ -811,5 +825,129 @@ extension IconLibrary {
             .line(to: SymbolPoint(120, 100)),
             .line(to: SymbolPoint(130, 65)),
         ], style: DrawStyle(fill: .none, stroke: .iconStroke, strokeWidth: 3, dash: nil))),
+    ] }
+
+    // 130336000011010000000000000000
+    private static func icon_delta_36110100_friend() -> [DrawInstruction] { [
+        .path(SymbolPath(segments: [
+            .move(to: SymbolPoint(115.9, 73)),
+            .line(to: SymbolPoint(126.5, 62.4)),
+            .line(to: SymbolPoint(137.1, 73)),
+            .line(to: SymbolPoint(126.5, 83.6)),
+            .move(to: SymbolPoint(73.5, 83.6)),
+            .line(to: SymbolPoint(62.9, 73)),
+            .line(to: SymbolPoint(73.5, 62.4)),
+            .line(to: SymbolPoint(84.1, 73)),
+            .move(to: SymbolPoint(92.5, 70)),
+            .line(to: SymbolPoint(92.5, 55)),
+            .line(to: SymbolPoint(107.5, 55)),
+            .line(to: SymbolPoint(107.5, 70)),
+            .move(to: SymbolPoint(130, 100)),
+            .curve(to: SymbolPoint(100, 130), control1: SymbolPoint(130, 116.6), control2: SymbolPoint(116.6, 130)),
+            .curve(to: SymbolPoint(70, 100), control1: SymbolPoint(83.4, 130), control2: SymbolPoint(70, 116.6)),
+            .curve(to: SymbolPoint(100, 70), control1: SymbolPoint(70, 83.4), control2: SymbolPoint(83.4, 70)),
+            .curve(to: SymbolPoint(130, 100), control1: SymbolPoint(116.6, 70), control2: SymbolPoint(130, 83.4)),
+            .close,
+        ], style: DrawStyle(fill: .literal(.rgb255(255, 0, 0)), stroke: .iconStroke, strokeWidth: 3, dash: nil))),
+        .path(SymbolPath(segments: [
+            .move(to: SymbolPoint(74.8, 125.2)),
+            .line(to: SymbolPoint(125.2, 125.2)),
+            .line(to: SymbolPoint(125.2, 137.8)),
+            .line(to: SymbolPoint(74.8, 137.8)),
+            .close,
+        ], style: DrawStyle(fill: .literal(.rgb255(255, 0, 0)), stroke: .iconStroke, strokeWidth: 3, dash: nil))),
+    ] }
+
+    // 130636000011010000000000000000
+    private static func icon_delta_36110100_hostile() -> [DrawInstruction] { [
+        .path(SymbolPath(segments: [
+            .move(to: SymbolPoint(115.9, 73)),
+            .line(to: SymbolPoint(126.5, 62.4)),
+            .line(to: SymbolPoint(137.1, 73)),
+            .line(to: SymbolPoint(126.5, 83.6)),
+            .move(to: SymbolPoint(73.5, 83.6)),
+            .line(to: SymbolPoint(62.9, 73)),
+            .line(to: SymbolPoint(73.5, 62.4)),
+            .line(to: SymbolPoint(84.1, 73)),
+            .move(to: SymbolPoint(92.5, 70)),
+            .line(to: SymbolPoint(92.5, 55)),
+            .line(to: SymbolPoint(107.5, 55)),
+            .line(to: SymbolPoint(107.5, 70)),
+            .move(to: SymbolPoint(130, 100)),
+            .curve(to: SymbolPoint(100, 130), control1: SymbolPoint(130, 116.6), control2: SymbolPoint(116.6, 130)),
+            .curve(to: SymbolPoint(70, 100), control1: SymbolPoint(83.4, 130), control2: SymbolPoint(70, 116.6)),
+            .curve(to: SymbolPoint(100, 70), control1: SymbolPoint(70, 83.4), control2: SymbolPoint(83.4, 70)),
+            .curve(to: SymbolPoint(130, 100), control1: SymbolPoint(116.6, 70), control2: SymbolPoint(130, 83.4)),
+            .close,
+        ], style: DrawStyle(fill: .affiliationColor, stroke: .iconStroke, strokeWidth: 3, dash: nil))),
+        .path(SymbolPath(segments: [
+            .move(to: SymbolPoint(74.8, 125.2)),
+            .line(to: SymbolPoint(125.2, 125.2)),
+            .line(to: SymbolPoint(125.2, 137.8)),
+            .line(to: SymbolPoint(74.8, 137.8)),
+            .close,
+        ], style: DrawStyle(fill: .affiliationColor, stroke: .iconStroke, strokeWidth: 3, dash: nil))),
+    ] }
+
+    // 130436000011010000000000000000, 130436300011010000000000000000, 130436400011010000000000000000
+    private static func icon_delta_36110100_neutral() -> [DrawInstruction] { [
+        .path(SymbolPath(segments: [
+            .move(to: SymbolPoint(115.9, 73)),
+            .line(to: SymbolPoint(126.5, 62.4)),
+            .line(to: SymbolPoint(137.1, 73)),
+            .line(to: SymbolPoint(126.5, 83.6)),
+            .move(to: SymbolPoint(73.5, 83.6)),
+            .line(to: SymbolPoint(62.9, 73)),
+            .line(to: SymbolPoint(73.5, 62.4)),
+            .line(to: SymbolPoint(84.1, 73)),
+            .move(to: SymbolPoint(92.5, 70)),
+            .line(to: SymbolPoint(92.5, 55)),
+            .line(to: SymbolPoint(107.5, 55)),
+            .line(to: SymbolPoint(107.5, 70)),
+            .move(to: SymbolPoint(130, 100)),
+            .curve(to: SymbolPoint(100, 130), control1: SymbolPoint(130, 116.6), control2: SymbolPoint(116.6, 130)),
+            .curve(to: SymbolPoint(70, 100), control1: SymbolPoint(83.4, 130), control2: SymbolPoint(70, 116.6)),
+            .curve(to: SymbolPoint(100, 70), control1: SymbolPoint(70, 83.4), control2: SymbolPoint(83.4, 70)),
+            .curve(to: SymbolPoint(130, 100), control1: SymbolPoint(116.6, 70), control2: SymbolPoint(130, 83.4)),
+            .close,
+        ], style: DrawStyle(fill: .literal(.rgb255(255, 0, 0)), stroke: .iconStroke, strokeWidth: 3, dash: nil))),
+        .path(SymbolPath(segments: [
+            .move(to: SymbolPoint(74.8, 125.2)),
+            .line(to: SymbolPoint(125.2, 125.2)),
+            .line(to: SymbolPoint(125.2, 137.8)),
+            .line(to: SymbolPoint(74.8, 137.8)),
+            .close,
+        ], style: DrawStyle(fill: .literal(.rgb255(255, 0, 0)), stroke: .iconStroke, strokeWidth: 3, dash: nil))),
+    ] }
+
+    // 130036000011010000000000000000
+    private static func icon_delta_36110100_unknown() -> [DrawInstruction] { [
+        .path(SymbolPath(segments: [
+            .move(to: SymbolPoint(115.9, 73)),
+            .line(to: SymbolPoint(126.5, 62.4)),
+            .line(to: SymbolPoint(137.1, 73)),
+            .line(to: SymbolPoint(126.5, 83.6)),
+            .move(to: SymbolPoint(73.5, 83.6)),
+            .line(to: SymbolPoint(62.9, 73)),
+            .line(to: SymbolPoint(73.5, 62.4)),
+            .line(to: SymbolPoint(84.1, 73)),
+            .move(to: SymbolPoint(92.5, 70)),
+            .line(to: SymbolPoint(92.5, 55)),
+            .line(to: SymbolPoint(107.5, 55)),
+            .line(to: SymbolPoint(107.5, 70)),
+            .move(to: SymbolPoint(130, 100)),
+            .curve(to: SymbolPoint(100, 130), control1: SymbolPoint(130, 116.6), control2: SymbolPoint(116.6, 130)),
+            .curve(to: SymbolPoint(70, 100), control1: SymbolPoint(83.4, 130), control2: SymbolPoint(70, 116.6)),
+            .curve(to: SymbolPoint(100, 70), control1: SymbolPoint(70, 83.4), control2: SymbolPoint(83.4, 70)),
+            .curve(to: SymbolPoint(130, 100), control1: SymbolPoint(116.6, 70), control2: SymbolPoint(130, 83.4)),
+            .close,
+        ], style: DrawStyle(fill: .literal(.rgb255(255, 0, 0)), stroke: .iconStroke, strokeWidth: 3, dash: nil))),
+        .path(SymbolPath(segments: [
+            .move(to: SymbolPoint(74.8, 125.2)),
+            .line(to: SymbolPoint(125.2, 125.2)),
+            .line(to: SymbolPoint(125.2, 137.8)),
+            .line(to: SymbolPoint(74.8, 137.8)),
+            .close,
+        ], style: DrawStyle(fill: .literal(.rgb255(255, 0, 0)), stroke: .iconStroke, strokeWidth: 3, dash: nil))),
     ] }
 }

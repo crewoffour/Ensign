@@ -440,23 +440,52 @@ final class ComposerTests: XCTestCase {
                        .rgb255(0, 180, 240))
     }
 
-    func testMineWarfareRendersUnframedIconOnly() throws {
-        // Set 36 points are unframed like control measures: milsymbol
-        // marks them frame-false, and bare codes render nothing at
-        // all (oracle-verified against blank references). Their icons
-        // arrive through the standard unframed extraction path.
+    func testMineWarfareRendersFramedUnfilled() throws {
+        // Set 36 is framed but unfilled (milsymbol metadata: frame
+        // true, fill false): the outline and icons carry the saturated
+        // affiliation colors instead of black linework and pastel
+        // fills.
         let mine = try MilSymbol("10043600000000000000")
-        XCTAssertTrue(mine.rendersUnframed)
-        XCTAssertFalse(mine.frame.isFramed)
-        let icon = IconLibrary.instructions(
-            for: mine.iconKey, base: mine.affiliation.frameBase) ?? []
-        XCTAssertEqual(SymbolComposer.geometry(for: mine).instructions, icon)
-        // A condition on a symbol that drew nothing draws nothing:
-        // no orphaned bar.
+        XCTAssertFalse(mine.isFilled)
+        XCTAssertTrue(mine.frame.isFramed)
+        let geometry = SymbolComposer.geometry(for: mine)
+        XCTAssertEqual(geometry.instructions.count, 1)
+        guard case .path(let outline) = geometry.instructions[0] else {
+            return XCTFail("expected the frame outline")
+        }
+        XCTAssertEqual(outline.style.stroke, .affiliationColor)
+        XCTAssertEqual(outline.style.fill, ColorRole.none)
+        // The saturated set resolves per affiliation; the palette can
+        // override it like any other role.
         XCTAssertEqual(
-            SymbolComposer.geometry(for: try MilSymbol("10043640000000000000")).instructions,
-            icon)
-        XCTAssertTrue(mine.renderKey.contains("unframed"))
+            SymbolPalette.light.color(for: .affiliationColor, fillClass: .hostile),
+            .rgb255(255, 0, 0))
+        // A pending mine takes the standard dash construction: solid
+        // outline in the saturated color, white contrast dash overlay
+        // on top, exactly like filled frames.
+        let pending = SymbolComposer.geometry(for: try MilSymbol("10003600000000000000"))
+        guard case .path(let solidOutline) = pending.instructions.first else {
+            return XCTFail("expected the solid outline")
+        }
+        XCTAssertEqual(solidOutline.style.stroke, .affiliationColor)
+        XCTAssertNil(solidOutline.style.dash)
+        guard case .path(let overlay) = pending.instructions[1] else {
+            return XCTFail("expected the dash overlay")
+        }
+        XCTAssertEqual(overlay.style.stroke, .contrastFill)
+        XCTAssertNotNil(overlay.style.dash)
+        // Unfilled conditions take slashes in the saturated color, not
+        // the bar: one for damaged, two for destroyed, appended last.
+        let damaged = SymbolComposer.geometry(for: try MilSymbol("10043630000000000000"))
+        let destroyed = SymbolComposer.geometry(for: try MilSymbol("10043640000000000000"))
+        XCTAssertEqual(destroyed.instructions.count, damaged.instructions.count + 1)
+        guard case .path(let slash) = damaged.instructions.last else {
+            return XCTFail("expected the slash")
+        }
+        XCTAssertEqual(slash.style.stroke, .affiliationColor)
+        XCTAssertEqual(slash.style.strokeWidth, 8)
+        XCTAssertTrue(mine.renderKey.contains("nofill"))
+        XCTAssertFalse(mine.renderKey.contains("unframed"))
     }
 
     func testLeadershipChevronForFriendlyAffiliationsOnly() throws {
@@ -476,6 +505,37 @@ final class ComposerTests: XCTestCase {
         XCTAssertTrue(try MilSymbol("10032700710000000000").renderKey.contains("lead"))
         XCTAssertTrue(try MilSymbol("10043600000000000000").renderKey.contains("nofill"))
         XCTAssertFalse(try MilSymbol("10031000000000000000").renderKey.contains("c-"))
+    }
+
+    // MARK: - Charlie amplifiers (Session 8b)
+
+    func testCharlieMobilityAndInstallationDecode() throws {
+        XCTAssertEqual(try MilSymbol("SFGPE-----MQ---").mobility, .tracked)
+        XCTAssertEqual(try MilSymbol("SFGPE-----NS---").mobility, .shortTowedArray)
+        XCTAssertNil(try MilSymbol("SFGPE-----MZ---").mobility)
+        XCTAssertNil(try MilSymbol("SFGPU------F---").mobility)
+        XCTAssertTrue(try MilSymbol("SFGPI-----H----").isInstallation)
+        XCTAssertFalse(try MilSymbol("SFGPU-----A----").isInstallation)
+        // Delta installations keep the flag through the symbol set.
+        XCTAssertTrue(try MilSymbol("10032000000000000000").isInstallation)
+    }
+
+    func testCharlieAmplifiersCompose() throws {
+        // Tracked equipment through the charlie path: frame plus the
+        // capsule, same as its delta twin.
+        let charlie = SymbolComposer.geometry(for: try MilSymbol("SFGPE-----MQ---"))
+        let delta = SymbolComposer.geometry(for: try MilSymbol("10031500330000000000"))
+        XCTAssertEqual(charlie.instructions.count, delta.instructions.count)
+        // Charlie function I is an installation by domain: the bar is
+        // already there, and the H modifier is redundant on it.
+        let plainI = SymbolComposer.geometry(for: try MilSymbol("SFGPI----------"))
+        XCTAssertEqual(plainI.instructions.count, 2)
+        let modifierI = SymbolComposer.geometry(for: try MilSymbol("SFGPI-----H----"))
+        XCTAssertEqual(modifierI.instructions.count, plainI.instructions.count)
+        // On a non-installation function, H alone raises the bar.
+        let plainU = SymbolComposer.geometry(for: try MilSymbol("SFGPU----------"))
+        let modifierU = SymbolComposer.geometry(for: try MilSymbol("SFGPU-----H----"))
+        XCTAssertEqual(modifierU.instructions.count, plainU.instructions.count + 1)
     }
 
     // MARK: - Fill classes and palette

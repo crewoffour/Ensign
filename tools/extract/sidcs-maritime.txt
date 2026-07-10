@@ -109,11 +109,22 @@
 130425000013030000000000000000
 130325000013030000000000000000
 
-# Still deferred (parse correctly today, render incompletely; keep in
-# Beacon via the existing atlas until then):
-#   nav-hazard   130436000011010000000000000000  set 36 mine warfare
-#                (MEDAL fill rules)
-#   cbrn renders its frame and installation bar since 7a; its set 20
-#     icon (110600) extracts whenever wanted
-#   command-post renders frame and HQ staff since 7a
-#   joker/faker: rendered correctly since 7b (friend frame, J/K)
+# Mine warfare (set 36, Session 8b): unframed icon-only per the 8a
+# oracle finding; per-identity variants confirm the affiliation-fill
+# icon coloring, and the damaged row exercises the condition bar on
+# an unframed icon (extent-based placement approximating milsymbol's
+# iconBottom)
+130436000011010000000000000000
+130336000011010000000000000000
+130636000011010000000000000000
+130436300011010000000000000000
+130036000011010000000000000000
+130436400011010000000000000000
+
+# CBRN installation icon (set 20; frame and bar render since 7a)
+130420000011060000000000000000
+130320000011060000000000000000
+
+# Fully rendered since Session 7:
+#   command-post: frame and HQ staff since 7a
+#   joker/faker: friend frame with J/K since 7b

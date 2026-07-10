@@ -92,6 +92,21 @@ public struct SymbolPalette: Hashable, Sendable {
     }
 
     /// Resolves one role for one fill class.
+    /// The saturated affiliation colors for unfilled symbols (mine
+    /// warfare): milsymbol's unfilled color set. The suspect value is
+    /// the evidently intended one; milsymbol 3.0.4 ships it with an
+    /// "rbg" typo that produces an invalid color (worth reporting
+    /// upstream), so unfilled suspect symbols cannot be
+    /// oracle-compared until that is fixed.
+    public var affiliationColors: [FillClass: SymbolColor] = [
+        .friend: .rgb255(0, 255, 255),
+        .hostile: .rgb255(255, 0, 0),
+        .neutral: .rgb255(0, 255, 0),
+        .unknown: .rgb255(255, 255, 0),
+        .civilian: .rgb255(255, 0, 255),
+        .suspect: .rgb255(255, 188, 1),
+    ]
+
     /// Operational condition bar colors. Defaults are milsymbol's
     /// fixed values; override in a custom palette for accessibility
     /// (the default green/yellow/red set is hostile to red-green
@@ -113,6 +128,8 @@ public struct SymbolPalette: Hashable, Sendable {
             return iconFill
         case .contrastFill:
             return contrastFill
+        case .affiliationColor:
+            return affiliationColors[fillClass] ?? .clear
         case .conditionFullyCapable:
             return conditionFullyCapable
         case .conditionDamaged:
@@ -121,6 +138,8 @@ public struct SymbolPalette: Hashable, Sendable {
             return conditionDestroyed
         case .conditionFullToCapacity:
             return conditionFullToCapacity
+        case .literal(let color):
+            return color
         case .none:
             return .clear
         }

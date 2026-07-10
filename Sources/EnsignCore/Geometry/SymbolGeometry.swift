@@ -40,7 +40,7 @@ public struct SymbolPoint: Hashable, Sendable {
 /// dark fill modes remain a render-time choice, and makes custom palettes
 /// (including accessibility palettes) a single substitution point rather
 /// than a geometry rewrite.
-public enum ColorRole: Hashable, Sendable, CaseIterable {
+public enum ColorRole: Hashable, Sendable {
     /// The frame outline. Standard rendering uses black.
     case frameStroke
     /// The frame interior, resolved per affiliation and fill mode.
@@ -52,6 +52,11 @@ public enum ColorRole: Hashable, Sendable, CaseIterable {
     /// Icon areas that must contrast against the affiliation fill
     /// (typically white in standard rendering).
     case contrastFill
+    /// The saturated affiliation color used by unfilled symbols (mine
+    /// warfare), where the frame outline and icons carry the
+    /// affiliation instead of a fill: pure red, cyan, green, yellow,
+    /// per milsymbol's unfilled color set.
+    case affiliationColor
     /// Operational condition bar fills. Defaults match milsymbol's
     /// fixed condition colors; custom palettes can override them,
     /// which is the substitution point for accessibility palettes
@@ -61,6 +66,11 @@ public enum ColorRole: Hashable, Sendable, CaseIterable {
     case conditionDamaged
     case conditionDestroyed
     case conditionFullToCapacity
+    /// A fixed, palette-independent color. Some icons (mine warfare's
+    /// red, per the standard's MEDAL coloring) carry literal colors
+    /// that never vary with affiliation or fill mode; the generator
+    /// emits these as literals and notes them in its output.
+    case literal(SymbolColor)
     /// No paint; used for construction paths.
     case none
 }

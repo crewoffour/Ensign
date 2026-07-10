@@ -1,0 +1,20 @@
+# Subtype verification scratch list (Session 8b): candidate 2525D
+# entity codes for the two Beacon mapper rows rendered as parents
+# since Session 6. Workflow:
+#   node extract.js --sidcs sidcs-verify.txt --icon-extract --out out/verify.json
+#   node reference-render.js --sidcs sidcs-verify.txt --out out/verify-refs --pixels 200
+# Then read out/verify.json: validIcon false means the code does not
+# exist; for the true ones, eyeball out/verify-refs to identify which
+# candidate is the fighter and which the line/main combatant, and
+# update Beacon's SymbologyMapper (M-F and C-L rows) accordingly.
+# Do NOT run codegen against this file.
+
+# Fighter candidates (air, 1101xx subtypes)
+130301000011010200000000000000
+130301000011010300000000000000
+130301000011010400000000000000
+
+# Sea combatant subtype candidates (12xxxx)
+130330000012010000000000000000
+130330000012020000000000000000
+130330000012030000000000000000

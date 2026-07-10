@@ -54,12 +54,41 @@ function symbolOptions() {
 // Deep-equal prefix check over plain-data instruction arrays. Both
 // arrays come from identical construction code paths, so JSON key
 // order is stable and stringify comparison is sound.
-function isInstructionPrefix(prefix, full) {
-  if (prefix.length > full.length) return false;
-  for (let i = 0; i < prefix.length; i += 1) {
-    if (JSON.stringify(prefix[i]) !== JSON.stringify(full[i])) return false;
+// Splits the full build as prefix + icon + suffix, where the
+// frame-only build must equal exactly prefix + suffix. Fails loudly
+// with both instruction arrays and the matched lengths otherwise.
+function subtractPrefixAndSuffix(frameOnly, full) {
+  const key = (instruction) => JSON.stringify(instruction);
+  let prefix = 0;
+  while (
+    prefix < frameOnly.length &&
+    prefix < full.length &&
+    key(frameOnly[prefix]) === key(full[prefix])
+  ) {
+    prefix += 1;
   }
-  return true;
+  let suffix = 0;
+  while (
+    suffix < frameOnly.length - prefix &&
+    suffix < full.length - prefix &&
+    key(frameOnly[frameOnly.length - 1 - suffix]) === key(full[full.length - 1 - suffix])
+  ) {
+    suffix += 1;
+  }
+  if (prefix + suffix !== frameOnly.length) {
+    const error = new Error(
+      "frame-only instructions are not a prefix plus suffix of the " +
+      "full instructions; the icon cannot be isolated by subtraction"
+    );
+    error.diagnostics = {
+      matchedPrefix: prefix,
+      matchedSuffix: suffix,
+      frameOnlyInstructions: frameOnly,
+      fullInstructions: full,
+    };
+    throw error;
+  }
+  return full.slice(prefix, full.length - suffix);
 }
 
 function extractOne(sidc) {
@@ -73,10 +102,11 @@ function extractOne(sidc) {
     // a reference render uses; no option-dependent color distortion
     // can creep in.
     //
-    // Symbols milsymbol itself renders unframed (sea own track:
-    // metadata.frame false) have no frame instructions to subtract;
-    // the full build IS the icon, and Ensign reproduces milsymbol's
-    // unframed rendering by construction.
+    // The frame-only build equals a prefix of the full build (the
+    // frame and pre-icon parts) plus a suffix (modifiers drawn after
+    // the icon: installation bars, condition bars); the icon is the
+    // middle. Symbols milsymbol renders unframed (sea own track)
+    // simply have an empty prefix, and the same split applies.
     const fullOptions = { size: 100, infoFields: false };
     if (args.standard) fullOptions.standard = args.standard;
     const full = new ms.Symbol(sidc, fullOptions);
@@ -85,23 +115,14 @@ function extractOne(sidc) {
     let iconInstructions;
     let frameInstructionCount;
     if (metadata.frame === false) {
+      // Unframed symbols: the full build is the icon (established in
+      // Session 4; their frame-only builds are not inspected here).
       iconInstructions = full.drawInstructions;
       frameInstructionCount = 0;
     } else {
       const frameOnly = new ms.Symbol(sidc, { ...fullOptions, icon: false });
-      if (!isInstructionPrefix(frameOnly.drawInstructions, full.drawInstructions)) {
-        const error = new Error(
-          "frame-only instructions are not a prefix of the full " +
-          "instructions; the SIDC likely carries modifiers drawn after " +
-          "the icon, which icon extraction does not support yet"
-        );
-        error.diagnostics = {
-          frameOnlyInstructions: frameOnly.drawInstructions,
-          fullInstructions: full.drawInstructions,
-        };
-        throw error;
-      }
-      iconInstructions = full.drawInstructions.slice(frameOnly.drawInstructions.length);
+      iconInstructions = subtractPrefixAndSuffix(
+        frameOnly.drawInstructions, full.drawInstructions);
       frameInstructionCount = frameOnly.drawInstructions.length;
     }
 

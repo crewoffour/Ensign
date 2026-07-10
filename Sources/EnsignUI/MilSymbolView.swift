@@ -45,11 +45,19 @@ public struct MilSymbolView: View {
     /// `.light`, `.medium`, `.dark`, or a custom palette.
     public var palette: SymbolPalette
 
+    /// How the symbol fills the view. Full canvas (the default) keeps
+    /// the authored margins and a common scale across symbols; tight
+    /// scales the drawn extent to fill the view, which is the right
+    /// choice for amplified symbols (HQ staffs, large echelons) that
+    /// overflow the authored canvas and would otherwise clip.
+    public var fit: SpriteFit
+
     /// Creates a view for a parsed symbol.
-    public init(_ symbol: MilSymbol, palette: SymbolPalette = .light) {
+    public init(_ symbol: MilSymbol, palette: SymbolPalette = .light, fit: SpriteFit = .fullCanvas) {
         self.geometry = SymbolComposer.geometry(for: symbol)
         self.fillClass = symbol.fillClass
         self.palette = palette
+        self.fit = fit
         self.accessibilityText = String(describing: symbol)
     }
 
@@ -67,7 +75,8 @@ public struct MilSymbolView: View {
                     geometry,
                     fillClass: fillClass,
                     in: cgContext,
-                    pixelSize: side
+                    pixelSize: side,
+                    fit: fit
                 )
             }
         }
