@@ -9,7 +9,7 @@ Third-party attributions
 The frame outline geometry, frame overlay geometry (space bar and
 activity corner brackets), frame amplifier geometry (headquarters
 staff, task force bracket, installation bar, feint/dummy caret,
-echelon marks, and mobility indicators), standard fill palettes
+echelon marks, and mobility indicators, dismounted leadership, status condition modifiers, and the direction of movement arrow), standard fill palettes
 (light, medium, and dark color modes), and frame dash patterns in
 EnsignCore are ported
 from milsymbol (https://github.com/spatialillusions/milsymbol),

@@ -52,6 +52,15 @@ public enum ColorRole: Hashable, Sendable, CaseIterable {
     /// Icon areas that must contrast against the affiliation fill
     /// (typically white in standard rendering).
     case contrastFill
+    /// Operational condition bar fills. Defaults match milsymbol's
+    /// fixed condition colors; custom palettes can override them,
+    /// which is the substitution point for accessibility palettes
+    /// (fully capable green vs destroyed red is a classic red-green
+    /// confusion pair).
+    case conditionFullyCapable
+    case conditionDamaged
+    case conditionDestroyed
+    case conditionFullToCapacity
     /// No paint; used for construction paths.
     case none
 }

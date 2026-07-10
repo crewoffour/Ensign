@@ -16,7 +16,8 @@
 // bracket, installation bar, feint/dummy caret, echelon marks,
 // mobility indicators, and the direction of movement arrow) is ported
 // coordinate-for-coordinate from milsymbol's
-// symbolfunctions/modifier.js and directionarrow.js
+// symbolfunctions/modifier.js, directionarrow.js, and
+// statusmodifier.js
 // (https://github.com/spatialillusions/milsymbol), Copyright (c)
 // Mans Beckman, MIT License, for oracle pixel parity. See NOTICE.
 
@@ -33,6 +34,61 @@ public enum ModifierGeometry {
     /// The feint/dummy caret stroke, dashed with milsymbol's
     /// feintDummy array.
     static let feintDummyStroke = DrawStyle(stroke: .frameStroke, strokeWidth: 4, dash: [8, 8])
+
+    // MARK: - Dismounted leadership
+
+    /// The dismounted leadership chevron, drawn for friendly
+    /// affiliations only, both leadership codes rendering alike, per
+    /// milsymbol (its other-affiliation variants are commented out in
+    /// the source). Fixed canvas coordinates: m 45,60 55,-25 55,25.
+    public static func leadershipChevron() -> DrawInstruction {
+        .path(SymbolPath(segments: [
+            .move(to: SymbolPoint(45, 60)),
+            .line(to: SymbolPoint(100, 35)),
+            .line(to: SymbolPoint(155, 60)),
+        ], style: stroke))
+    }
+
+    // MARK: - Status condition
+
+    /// The operational condition bar for filled symbols: frame-width,
+    /// 25 units tall, below the frame (offset 25 when a mobility mark
+    /// needs the room, else 5), filled with the palette's condition
+    /// color and stroked in the frame color.
+    public static func conditionBar(
+        role: ColorRole,
+        bounds: FrameBounds,
+        yBase: Double
+    ) -> DrawInstruction {
+        let width = bounds.x2 - bounds.x1
+        return .path(SymbolPath(segments: [
+            .move(to: SymbolPoint(bounds.x1, yBase)),
+            .line(to: SymbolPoint(bounds.x1 + width, yBase)),
+            .line(to: SymbolPoint(bounds.x1 + width, yBase + 25)),
+            .line(to: SymbolPoint(bounds.x1, yBase + 25)),
+            .close,
+        ], style: DrawStyle(fill: role, stroke: .frameStroke, strokeWidth: 4)))
+    }
+
+    /// The condition slashes for unfilled symbols: one diagonal for
+    /// damaged, both for destroyed, at double stroke width in the
+    /// frame color, in fixed canvas coordinates.
+    public static func conditionSlashes(destroyed: Bool) -> [DrawInstruction] {
+        let style = DrawStyle(stroke: .frameStroke, strokeWidth: 8)
+        var instructions: [DrawInstruction] = [
+            .path(SymbolPath(segments: [
+                .move(to: SymbolPoint(150, 20)),
+                .line(to: SymbolPoint(50, 180)),
+            ], style: style)),
+        ]
+        if destroyed {
+            instructions.append(.path(SymbolPath(segments: [
+                .move(to: SymbolPoint(50, 20)),
+                .line(to: SymbolPoint(150, 180)),
+            ], style: style)))
+        }
+        return instructions
+    }
 
     // MARK: - Direction of movement arrow
 

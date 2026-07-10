@@ -27,13 +27,13 @@ extension MilSymbol {
     /// identity, frame base, fill class, dash treatment, framing, the
     /// space and activity overlays, and the frame amplifiers (HQ/task
     /// force/feint-dummy flags, echelon, mobility). It is deliberately versioned
-    /// ("ensign3" since exercise context joined the rendering)
+    /// ("ensign4" since status conditions and leadership joined the rendering)
     /// because new rendered features will extend it; do not persist render keys across app versions
     /// before Ensign 1.0.
     public var renderKey: String {
         let descriptor = frame
         var parts = [
-            "ensign3",
+            "ensign4",
             iconKey.family.rawValue,
             iconKey.code,
             String(describing: affiliation.frameBase),
@@ -60,7 +60,16 @@ extension MilSymbol {
             } else if isExercise {
                 parts.append("ex")
             }
+            if leadership != nil { parts.append("lead") }
         }
+        switch status {
+        case .presentFullyCapable: parts.append("c-fc")
+        case .presentDamaged: parts.append("c-dmg")
+        case .presentDestroyed: parts.append("c-dst")
+        case .presentFullToCapacity: parts.append("c-ftc")
+        case .present, .anticipated: break
+        }
+        if !isFilled { parts.append("nofill") }
         return parts.joined(separator: ":")
     }
 }

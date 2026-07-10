@@ -92,6 +92,15 @@ public struct SymbolPalette: Hashable, Sendable {
     }
 
     /// Resolves one role for one fill class.
+    /// Operational condition bar colors. Defaults are milsymbol's
+    /// fixed values; override in a custom palette for accessibility
+    /// (the default green/yellow/red set is hostile to red-green
+    /// color vision).
+    public var conditionFullyCapable: SymbolColor = .rgb255(0, 255, 0)
+    public var conditionDamaged: SymbolColor = .rgb255(255, 255, 0)
+    public var conditionDestroyed: SymbolColor = .rgb255(255, 0, 0)
+    public var conditionFullToCapacity: SymbolColor = .rgb255(0, 180, 240)
+
     public func color(for role: ColorRole, fillClass: FillClass) -> SymbolColor {
         switch role {
         case .frameStroke:
@@ -104,6 +113,14 @@ public struct SymbolPalette: Hashable, Sendable {
             return iconFill
         case .contrastFill:
             return contrastFill
+        case .conditionFullyCapable:
+            return conditionFullyCapable
+        case .conditionDamaged:
+            return conditionDamaged
+        case .conditionDestroyed:
+            return conditionDestroyed
+        case .conditionFullToCapacity:
+            return conditionFullToCapacity
         case .none:
             return .clear
         }

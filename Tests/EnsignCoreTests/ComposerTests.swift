@@ -336,7 +336,7 @@ final class ComposerTests: XCTestCase {
 
     func testRenderKeyCoversAmplifiers() throws {
         let plain = try MilSymbol("10031000001211000000").renderKey
-        XCTAssertTrue(plain.hasPrefix("ensign3:"))
+        XCTAssertTrue(plain.hasPrefix("ensign4:"))
         let battalionHQ = try MilSymbol("10031002161211000000").renderKey
         XCTAssertTrue(battalionHQ.contains("hq"))
         XCTAssertTrue(battalionHQ.contains("e-battalionSquadron"))
@@ -380,7 +380,7 @@ final class ComposerTests: XCTestCase {
     func testRenderKeyCoversExerciseContext() throws {
         let reality = try MilSymbol("10031000000000000000").renderKey
         let exercise = try MilSymbol("10131000000000000000").renderKey
-        XCTAssertTrue(reality.hasPrefix("ensign3:"))
+        XCTAssertTrue(reality.hasPrefix("ensign4:"))
         XCTAssertTrue(exercise.contains(":ex"))
         XCTAssertNotEqual(reality, exercise)
         XCTAssertTrue(try MilSymbol("10231000000000000000").renderKey.contains(":sim"))
@@ -417,6 +417,65 @@ final class ComposerTests: XCTestCase {
         XCTAssertEqual(
             SymbolComposer.geometry(for: checkpoint).instructions, icon,
             "frameless symbols must compose to exactly their icon instructions")
+    }
+
+    // MARK: - Status conditions and leadership (Session 8a)
+
+    func testConditionBarComposesForFilledSymbols() throws {
+        let plain = SymbolComposer.geometry(for: try MilSymbol("10031000000000000000"))
+        // Damaged friend land unit: frame plus the condition bar.
+        let damaged = SymbolComposer.geometry(for: try MilSymbol("10031030000000000000"))
+        XCTAssertEqual(damaged.instructions.count, plain.instructions.count + 1)
+        guard case .path(let bar) = damaged.instructions.last else {
+            return XCTFail("expected the bar last")
+        }
+        XCTAssertEqual(bar.style.fill, .conditionDamaged)
+        XCTAssertEqual(bar.style.stroke, .frameStroke)
+        // The four condition roles resolve to milsymbol's colors in the
+        // light palette.
+        let palette = SymbolPalette.light
+        XCTAssertEqual(palette.color(for: .conditionFullyCapable, fillClass: .friend),
+                       .rgb255(0, 255, 0))
+        XCTAssertEqual(palette.color(for: .conditionFullToCapacity, fillClass: .friend),
+                       .rgb255(0, 180, 240))
+    }
+
+    func testMineWarfareRendersUnframedIconOnly() throws {
+        // Set 36 points are unframed like control measures: milsymbol
+        // marks them frame-false, and bare codes render nothing at
+        // all (oracle-verified against blank references). Their icons
+        // arrive through the standard unframed extraction path.
+        let mine = try MilSymbol("10043600000000000000")
+        XCTAssertTrue(mine.rendersUnframed)
+        XCTAssertFalse(mine.frame.isFramed)
+        let icon = IconLibrary.instructions(
+            for: mine.iconKey, base: mine.affiliation.frameBase) ?? []
+        XCTAssertEqual(SymbolComposer.geometry(for: mine).instructions, icon)
+        // A condition on a symbol that drew nothing draws nothing:
+        // no orphaned bar.
+        XCTAssertEqual(
+            SymbolComposer.geometry(for: try MilSymbol("10043640000000000000")).instructions,
+            icon)
+        XCTAssertTrue(mine.renderKey.contains("unframed"))
+    }
+
+    func testLeadershipChevronForFriendlyAffiliationsOnly() throws {
+        XCTAssertEqual(try MilSymbol("10032700710000000000").leadership, .individual)
+        XCTAssertEqual(try MilSymbol("10032700720000000000").leadership, .deputyIndividual)
+        let friend = SymbolComposer.geometry(for: try MilSymbol("10032700710000000000"))
+        let plain = SymbolComposer.geometry(for: try MilSymbol("10032700000000000000"))
+        XCTAssertEqual(friend.instructions.count, plain.instructions.count + 1)
+        // Hostile leadership renders no chevron, matching milsymbol.
+        let hostile = SymbolComposer.geometry(for: try MilSymbol("10062700710000000000"))
+        let hostilePlain = SymbolComposer.geometry(for: try MilSymbol("10062700000000000000"))
+        XCTAssertEqual(hostile.instructions.count, hostilePlain.instructions.count)
+    }
+
+    func testRenderKeyCoversConditionsLeadershipAndFill() throws {
+        XCTAssertTrue(try MilSymbol("10031030000000000000").renderKey.contains("c-dmg"))
+        XCTAssertTrue(try MilSymbol("10032700710000000000").renderKey.contains("lead"))
+        XCTAssertTrue(try MilSymbol("10043600000000000000").renderKey.contains("nofill"))
+        XCTAssertFalse(try MilSymbol("10031000000000000000").renderKey.contains("c-"))
     }
 
     // MARK: - Fill classes and palette

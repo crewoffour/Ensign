@@ -397,7 +397,14 @@ public enum SymbolComposer {
 
         if frame.isFramed {
             // The frame itself: affiliation fill under a solid stroke.
-            instructions.append(instruction(for: shape, style: .frame))
+            // Unfilled symbol sets (mine warfare) draw the outline only,
+            // per milsymbol's fill metadata.
+            if symbol.isFilled {
+                instructions.append(instruction(for: shape, style: .frame))
+            } else {
+                instructions.append(instruction(for: shape, style: DrawStyle(
+                    stroke: .frameStroke, strokeWidth: 4)))
+            }
 
             // Filled overlays, painted in milsymbol order.
             if frame.hasSpaceModifier {
@@ -414,11 +421,20 @@ public enum SymbolComposer {
             }
 
             // The dashed overlay is stroked on top of the solid frame.
+            // On unfilled frames there is no fill to contrast against,
+            // so the affiliation color carries the overlay (the same
+            // principle as unframed icons).
             if let dash = frame.dash {
-                instructions.append(instruction(
-                    for: shape,
-                    style: .frameDashOverlay(pattern: dash.pattern)
-                ))
+                if symbol.isFilled {
+                    instructions.append(instruction(
+                        for: shape,
+                        style: .frameDashOverlay(pattern: dash.pattern)
+                    ))
+                } else {
+                    instructions.append(instruction(for: shape, style: DrawStyle(
+                        stroke: .affiliationFill, strokeWidth: 5,
+                        dash: dash.pattern)))
+                }
             }
         }
         // Unframed symbols (sea own track) skip the frame, fill, and
@@ -456,6 +472,13 @@ public enum SymbolComposer {
             let hqtfd = symbol.headquartersTaskForceDummy
             let isInstallation = symbol.domain == .landInstallation
 
+            // Dismounted leadership: friendly affiliations only, per
+            // milsymbol; both leadership codes render the same chevron.
+            if symbol.leadership != nil,
+               symbol.affiliation == .friend || symbol.affiliation == .assumedFriend {
+                instructions.append(ModifierGeometry.leadershipChevron())
+            }
+
             if hqtfd.contains(.headquarters) {
                 instructions.append(
                     ModifierGeometry.headquartersStaff(shape: shape, bounds: bounds))
@@ -482,7 +505,43 @@ public enum SymbolComposer {
             }
         }
 
+        // Status condition (statusmodifier.js), drawn over everything.
+        // Under default rendering the condition is always the colored
+        // bar: milsymbol's slash treatment belongs to its unfilled
+        // rendering OPTION (a display style), not to any symbol
+        // property, so the slash geometry waits in ModifierGeometry
+        // for a future rendering-option surface. A symbol that drew
+        // nothing (unframed with no icon) gets no bar, matching the
+        // oracle. Unframed symbols base the bar on the icon extent,
+        // approximating milsymbol's iconBottom.
+        if let conditionRole = Self.conditionRole(for: symbol.status),
+           !instructions.isEmpty {
+            let frameBounds = FrameGeometry.bounds(for: shape)
+            var yBase: Double
+            if frame.isFramed {
+                yBase = frameBounds.y2
+            } else {
+                yBase = SymbolGeometry(instructions: instructions).extent?.y2
+                    ?? frameBounds.y2
+            }
+            yBase += symbol.mobility != nil ? 25 : 5
+            instructions.append(ModifierGeometry.conditionBar(
+                role: conditionRole, bounds: frameBounds, yBase: yBase))
+        }
+
         return SymbolGeometry(instructions: instructions)
+    }
+
+    /// The condition color role for a status, or `nil` for statuses
+    /// without an operational condition.
+    private static func conditionRole(for status: OperationalStatus) -> ColorRole? {
+        switch status {
+        case .presentFullyCapable: return .conditionFullyCapable
+        case .presentDamaged: return .conditionDamaged
+        case .presentDestroyed: return .conditionDestroyed
+        case .presentFullToCapacity: return .conditionFullToCapacity
+        case .present, .anticipated: return nil
+        }
     }
 
     /// Emits the drawing instruction for one frame outline in one style.

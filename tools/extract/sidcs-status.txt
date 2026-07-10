@@ -1,0 +1,27 @@
+# Session 8a oracle worklist: status conditions, dismounted
+# leadership, and the unfilled mine warfare frame. All entity 000000
+# (no extraction needed): reference-render + catalog render +
+# diff --sidcs this file.
+
+# Condition bars on filled symbols (all four colors)
+10031020000000000000
+10031030000000000000
+10031040000000000000
+10031050000000000000
+10061040000000000000
+10041050000000000000
+
+# Bar spacing with a mobility mark below the frame (+25 vs +5)
+10031530330000000000
+
+# Dismounted leadership: friend and deputy render the chevron;
+# assumed friend does too; hostile renders nothing
+10032700710000000000
+10032700720000000000
+10022700710000000000
+10062700710000000000
+
+# Mine warfare (set 36) is unframed and icon-only (oracle-verified:
+# bare codes render blank on both sides), so its rows join the icon
+# extraction worklist in Session 8b once the mine icons exist; there
+# is nothing frame-level to compare here.

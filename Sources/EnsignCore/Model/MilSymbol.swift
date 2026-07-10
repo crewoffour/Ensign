@@ -129,6 +129,38 @@ public struct MilSymbol: Hashable, Sendable {
         return false
     }
 
+    /// The dismounted leadership amplifier, when present. Decoded from
+    /// the delta amplifier pair; the charlie encoding is deferred.
+    public var leadership: Leadership? {
+        if case .delta(let value) = sidc {
+            return Leadership(deltaAmplifier: value.amplifier)
+        }
+        return nil
+    }
+
+    /// Whether the frame renders with the affiliation fill. Kept for
+    /// unfilled rendering variants; no delta symbol set currently
+    /// reaches the unfilled-frame path (mine warfare turned out to be
+    /// unframed, not unfilled; see rendersUnframed).
+    public var isFilled: Bool {
+        if case .delta(let value) = sidc {
+            return value.symbolSetCode != "36"
+        }
+        return true
+    }
+
+    /// Whether this symbol renders without any frame: sea own tracks
+    /// and mine warfare points (delta set 36), which milsymbol marks
+    /// frame-false and renders icon-only, exactly like control
+    /// measures. Oracle-verified: bare set 36 codes render nothing.
+    public var rendersUnframed: Bool {
+        if isOwnTrack { return true }
+        if case .delta(let value) = sidc {
+            return value.symbolSetCode == "36"
+        }
+        return false
+    }
+
     /// The exercise amplifier letter drawn beside the frame, when any:
     /// "J" joker, "K" faker, "S" simulation, "X" other exercise tracks.
     public var exerciseAmplifierLetter: Character? {
@@ -229,7 +261,7 @@ public struct MilSymbol: Hashable, Sendable {
         }
         return FrameDescriptor(
             shape: FrameShape.resolve(base: base, domain: resolvedDomain),
-            isFramed: !isOwnTrack,
+            isFramed: !rendersUnframed,
             isDashed: dash != nil,
             dash: dash,
             hasSpaceModifier: resolvedDomain == .space,
