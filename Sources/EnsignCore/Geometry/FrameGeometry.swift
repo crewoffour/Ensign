@@ -363,6 +363,22 @@ public enum SymbolComposer {
     /// degradation path for unknown icons keeps the frame and drops the
     /// icon, and the degradation path for unknown frames is no drawing
     /// at all rather than a wrong drawing.
+    /// The horizontal gap between the frame's right edge and the
+    /// exercise amplifier letter: milsymbol tucks the text 10 units
+    /// closer for unknown frames and for hostile frames outside the
+    /// subsurface dimension, whose right edges taper. Fakers keep the
+    /// default spacing despite their hostile colors: they wear the
+    /// flat-edged friend frame, and milsymbol's tuck condition does not
+    /// match them (oracle-verified).
+    private static func exerciseTextSpacing(for symbol: MilSymbol) -> Double {
+        let affiliation = symbol.affiliation
+        if affiliation == .unknown || affiliation == .pending { return -10 }
+        if affiliation == .hostile, symbol.domain != .subsurface {
+            return -10
+        }
+        return 10
+    }
+
     public static func geometry(for symbol: MilSymbol) -> SymbolGeometry {
         let frame = symbol.frame
         guard let shape = frame.shape else {
@@ -400,6 +416,21 @@ public enum SymbolComposer {
         }
         // Unframed symbols (sea own track) skip the frame, fill, and
         // overlays entirely and render the icon alone.
+
+        // The exercise amplifier (X/J/K/S beside the frame) draws
+        // between the base geometry and the icon, matching milsymbol's
+        // affliationdimension part. The glyph outlines are baked at
+        // build time by tools/extract/bake-glyphs.js; absent glyphs
+        // degrade to no letter.
+        if frame.isFramed, let letter = symbol.exerciseAmplifierLetter,
+           let glyph = GeneratedExerciseGlyphs.segments(for: letter) {
+            let bounds = FrameGeometry.bounds(for: shape)
+            instructions.append(ModifierGeometry.exerciseAmplifier(
+                glyph: glyph,
+                x: bounds.x2 + exerciseTextSpacing(for: symbol),
+                y: letter == "X" ? 50 : 40
+            ))
+        }
 
         // The main icon paints last, matching milsymbol's part order
         // (its base geometry part emits the dash overlay before the

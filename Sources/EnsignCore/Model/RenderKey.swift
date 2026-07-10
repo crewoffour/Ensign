@@ -27,13 +27,13 @@ extension MilSymbol {
     /// identity, frame base, fill class, dash treatment, framing, the
     /// space and activity overlays, and the frame amplifiers (HQ/task
     /// force/feint-dummy flags, echelon, mobility). It is deliberately versioned
-    /// ("ensign2" since the amplifier stage joined the rendering)
+    /// ("ensign3" since exercise context joined the rendering)
     /// because new rendered features will extend it; do not persist render keys across app versions
     /// before Ensign 1.0.
     public var renderKey: String {
         let descriptor = frame
         var parts = [
-            "ensign2",
+            "ensign3",
             iconKey.family.rawValue,
             iconKey.code,
             String(describing: affiliation.frameBase),
@@ -55,6 +55,11 @@ extension MilSymbol {
             if hqtfd.contains(.feintDummy) { parts.append("fd") }
             if let echelon { parts.append("e-\(String(describing: echelon))") }
             if let mobility { parts.append("m-\(String(describing: mobility))") }
+            if isSimulation {
+                parts.append("sim")
+            } else if isExercise {
+                parts.append("ex")
+            }
         }
         return parts.joined(separator: ":")
     }

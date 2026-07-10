@@ -35,10 +35,12 @@ public enum Affiliation: Hashable, Sendable, CaseIterable {
     case suspect
     case hostile
     /// A friendly track acting as suspect during an exercise. Renders on
-    /// the suspect (hostile-shaped) frame.
+    /// the friend frame shape with suspect colors and a "J" amplifier,
+    /// per milsymbol's base-affiliation rule.
     case joker
     /// A friendly track acting as hostile during an exercise. Renders on
-    /// the hostile frame.
+    /// the friend frame shape with hostile colors and a "K" amplifier,
+    /// per milsymbol's base-affiliation rule.
     case faker
 
     /// The base frame family this affiliation renders onto.
@@ -50,8 +52,12 @@ public enum Affiliation: Hashable, Sendable, CaseIterable {
             return .friend
         case .neutral:
             return .neutral
-        case .suspect, .hostile, .joker, .faker:
+        case .suspect, .hostile:
             return .hostile
+        case .joker, .faker:
+            // Joker and faker are friendly tracks playing a role: the
+            // frame is the friend shape; the colors carry the threat.
+            return .friend
         }
     }
 

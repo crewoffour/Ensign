@@ -129,6 +129,16 @@ public struct MilSymbol: Hashable, Sendable {
         return false
     }
 
+    /// The exercise amplifier letter drawn beside the frame, when any:
+    /// "J" joker, "K" faker, "S" simulation, "X" other exercise tracks.
+    public var exerciseAmplifierLetter: Character? {
+        if affiliation == .joker { return "J" }
+        if affiliation == .faker { return "K" }
+        if isSimulation { return "S" }
+        if isExercise { return "X" }
+        return nil
+    }
+
     /// The normalized domain driving frame selection.
     public var domain: SymbolDomain {
         switch sidc {

@@ -336,12 +336,58 @@ final class ComposerTests: XCTestCase {
 
     func testRenderKeyCoversAmplifiers() throws {
         let plain = try MilSymbol("10031000001211000000").renderKey
-        XCTAssertTrue(plain.hasPrefix("ensign2:"))
+        XCTAssertTrue(plain.hasPrefix("ensign3:"))
         let battalionHQ = try MilSymbol("10031002161211000000").renderKey
         XCTAssertTrue(battalionHQ.contains("hq"))
         XCTAssertTrue(battalionHQ.contains("e-battalionSquadron"))
         XCTAssertNotEqual(plain, battalionHQ)
         XCTAssertTrue(try MilSymbol("10031500331301000000").renderKey.contains("m-tracked"))
+    }
+
+    // MARK: - Exercise context, joker, and faker (Session 7b)
+
+    func testJokerAndFakerTakeTheFriendFrameWithThreatColors() throws {
+        let friend = try MilSymbol("10031000000000000000")
+        let joker = try MilSymbol("13151000000000000000")
+        let faker = try MilSymbol("10161000000000000000")
+        // Friend frame shape, threat fills.
+        XCTAssertEqual(joker.frame.shape, friend.frame.shape)
+        XCTAssertEqual(faker.frame.shape, friend.frame.shape)
+        XCTAssertEqual(joker.fillClass, .suspect)   // version 13
+        XCTAssertEqual(faker.fillClass, .hostile)
+        // Joker identity is uncertain (dashed); faker is not.
+        XCTAssertTrue(joker.frame.isDashed)
+        XCTAssertFalse(faker.frame.isDashed)
+        // Amplifier letters.
+        XCTAssertEqual(joker.exerciseAmplifierLetter, "J")
+        XCTAssertEqual(faker.exerciseAmplifierLetter, "K")
+        XCTAssertEqual(try MilSymbol("10131000000000000000").exerciseAmplifierLetter, "X")
+        XCTAssertEqual(try MilSymbol("10231000000000000000").exerciseAmplifierLetter, "S")
+        XCTAssertNil(friend.exerciseAmplifierLetter)
+    }
+
+    func testExerciseAmplifierComposesWhenGlyphsAreBaked() throws {
+        // Glyph-presence-agnostic: the exercise symbol carries exactly
+        // one more instruction than its reality twin when the glyph
+        // exists, and the same count when it does not (placeholder).
+        let reality = SymbolComposer.geometry(for: try MilSymbol("10031000000000000000"))
+        let exercise = SymbolComposer.geometry(for: try MilSymbol("10131000000000000000"))
+        let expected = reality.instructions.count
+            + (GeneratedExerciseGlyphs.segments(for: "X") != nil ? 1 : 0)
+        XCTAssertEqual(exercise.instructions.count, expected)
+    }
+
+    func testRenderKeyCoversExerciseContext() throws {
+        let reality = try MilSymbol("10031000000000000000").renderKey
+        let exercise = try MilSymbol("10131000000000000000").renderKey
+        XCTAssertTrue(reality.hasPrefix("ensign3:"))
+        XCTAssertTrue(exercise.contains(":ex"))
+        XCTAssertNotEqual(reality, exercise)
+        XCTAssertTrue(try MilSymbol("10231000000000000000").renderKey.contains(":sim"))
+        // Joker and suspect render differently and key differently.
+        XCTAssertNotEqual(
+            try MilSymbol("13151000000000000000").renderKey,
+            try MilSymbol("13051000000000000000").renderKey)
     }
 
     // MARK: - Fill classes and palette

@@ -33,6 +33,44 @@ public enum ModifierGeometry {
     /// feintDummy array.
     static let feintDummyStroke = DrawStyle(stroke: .frameStroke, strokeWidth: 4, dash: [8, 8])
 
+    // MARK: - Exercise amplifier text
+
+    /// An exercise amplifier letter (X, J, K, or S) as a filled outline
+    /// beside the frame. The glyph segments are authored relative to
+    /// the text anchor (text-anchor start, alignment-baseline middle)
+    /// and translated to the anchor point here.
+    public static func exerciseAmplifier(
+        glyph: [PathSegment],
+        x: Double,
+        y: Double
+    ) -> DrawInstruction {
+        .path(SymbolPath(
+            segments: translated(glyph, dx: x, dy: y),
+            style: DrawStyle(fill: .frameStroke)
+        ))
+    }
+
+    static func translated(_ segments: [PathSegment], dx: Double, dy: Double) -> [PathSegment] {
+        func moved(_ point: SymbolPoint) -> SymbolPoint {
+            SymbolPoint(point.x + dx, point.y + dy)
+        }
+        return segments.map { segment in
+            switch segment {
+            case .move(let to): return .move(to: moved(to))
+            case .line(let to): return .line(to: moved(to))
+            case .quadCurve(let to, let control):
+                return .quadCurve(to: moved(to), control: moved(control))
+            case .curve(let to, let control1, let control2):
+                return .curve(to: moved(to), control1: moved(control1), control2: moved(control2))
+            case .arc(let center, let radius, let start, let end, let clockwise):
+                return .arc(center: moved(center), radius: radius,
+                            startAngle: start, endAngle: end, clockwise: clockwise)
+            case .close:
+                return .close
+            }
+        }
+    }
+
     // MARK: - Headquarters staff
 
     /// The HQ staff: a line from the frame's left edge down to

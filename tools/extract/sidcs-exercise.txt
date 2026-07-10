@@ -1,0 +1,36 @@
+# Session 7b oracle worklist: exercise context, joker, faker, and
+# simulation, all entity 000000 (no extraction pass needed).
+#
+# Bake the glyphs first: node bake-glyphs.js
+# Then: reference-render + catalog render + diff --sidcs this file.
+
+# Exercise X across identities and spacing rules (identity 6 under
+# exercise IS faker, so the hostile -10 case appears below instead)
+10131000000000000000
+10111000000000000000
+10141000000000000000
+10121000000000000000
+10101000000000000000
+10133000000000000000
+10130100000000000000
+10133500000000000000
+
+# Joker (friend shape, suspect colors, dashed, "J"; both editions for
+# the fill rule)
+13151000000000000000
+10151000000000000000
+13153000000000000000
+
+# Faker (friend shape, hostile colors, "K"; tucked -10 on land, +10 on
+# the subsurface dimension)
+10161000000000000000
+13161000000000000000
+10163500000000000000
+10160100000000000000
+
+# Simulation "S"
+10231000000000000000
+10261000000000000000
+
+# Coexistence with 7a amplifiers: exercise friend battalion HQ
+10131002160000000000

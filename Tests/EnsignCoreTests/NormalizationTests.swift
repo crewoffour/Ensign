@@ -51,11 +51,14 @@ final class NormalizationTests: XCTestCase {
         let joker = try MilSymbol("SJGP-----------")
         XCTAssertEqual(joker.affiliation, .joker)
         XCTAssertTrue(joker.isExercise)
-        XCTAssertEqual(joker.affiliation.frameBase, .hostile)
+        // Session 7b remap: joker and faker are friendly tracks playing
+        // a role, so the frame is the friend shape; the threat lives in
+        // the colors (see fillClass) and the J/K amplifier.
+        XCTAssertEqual(joker.affiliation.frameBase, .friend)
 
         let faker = try MilSymbol("SKGP-----------")
         XCTAssertEqual(faker.affiliation, .faker)
-        XCTAssertEqual(faker.affiliation.frameBase, .hostile)
+        XCTAssertEqual(faker.affiliation.frameBase, .friend)
     }
 
     func testDeltaExerciseContextProducesJokerAndFaker() throws {

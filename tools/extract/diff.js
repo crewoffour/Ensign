@@ -29,6 +29,8 @@ const { values: args } = parseArgs({
     out: { type: "string", default: "out/diffs" },
     threshold: { type: "string", default: "0.1" },
     allow: { type: "string", default: "0.002" },
+    // Optional worklist filter: compare exactly these SIDCs.
+    sidcs: { type: "string" },
   },
 });
 
