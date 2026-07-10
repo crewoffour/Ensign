@@ -34,7 +34,8 @@
 //                   [--font-regular fonts/LiberationSans-Regular.ttf]
 //                   [--font-bold fonts/LiberationSans-Bold.ttf]
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { parseArgs } from "node:util";
 import opentype from "opentype.js";
 
@@ -370,6 +371,13 @@ function normalizeColor(value) {
     v = `rgb(${r},${g},${b})`;
   }
   if (v === "black") v = "rgb(0,0,0)";
+  // Named CSS colors appearing in milsymbol's tables.
+  const named = {
+    red: "rgb(255,0,0)", green: "rgb(0,128,0)", blue: "rgb(0,0,255)",
+    yellow: "rgb(255,255,0)", orange: "rgb(255,165,0)",
+    magenta: "rgb(255,0,255)", cyan: "rgb(0,255,255)",
+  };
+  if (named[v]) v = named[v];
   if (v === "white") v = "rgb(255,255,255)";
   return v;
 }
@@ -581,6 +589,14 @@ function emitDrawable(drawable, table, sidc, defaultStrokeWidth) {
     d = instruction.d;
   }
 
+  // Instructions with no path data draw nothing in milsymbol either:
+  // skip them with a note. Non-empty data that parses to zero
+  // segments would be a silent drop and is a problem instead.
+  if (d === undefined || d === null || String(d).trim() === "") {
+    console.warn(`NOTE ${sidc}: instruction with empty path data skipped`);
+    return null;
+  }
+
   let segments;
   try {
     segments = parsePath(d, sidc);
@@ -589,6 +605,10 @@ function emitDrawable(drawable, table, sidc, defaultStrokeWidth) {
     return null;
   }
   segments = transformSegments(segments, m);
+  if (segments.length === 0) {
+    problem(sidc, `non-empty path data parsed to zero segments: "${d}"`);
+    return null;
+  }
   const swiftSegments = emitSegments(segments);
   return `.path(SymbolPath(segments: [\n            ` +
     swiftSegments.join(",\n            ") +
@@ -620,9 +640,16 @@ function baselineShift(instruction, face, size, sidc) {
 function textToPathData(instruction, sidc) {
   const face = font(instruction.fontweight === "bold" ? "bold" : "regular");
   const text = String(instruction.text ?? "");
-  const size = instruction.fontsize;
-  if (!Number.isFinite(size)) {
-    problem(sidc, "text instruction without a numeric fontsize");
+  // Fontsize occasionally arrives as a numeric string in milsymbol's
+  // hand-written tables; coerce leniently. Genuinely unparseable text
+  // skips with a note (flowing into the empty-icon guard when it was
+  // the icon's only drawable) rather than aborting the whole corpus;
+  // the oracle stage surfaces what such icons lose.
+  const size = Number.parseFloat(instruction.fontsize);
+  if (!Number.isFinite(size) || size <= 0) {
+    console.warn(
+      `NOTE ${sidc}: text instruction with unparseable fontsize ` +
+      `"${instruction.fontsize}" skipped`);
     return null;
   }
   const shift = baselineShift(instruction, face, size, sidc);
@@ -702,6 +729,13 @@ function main() {
       const swift = emitDrawable(drawable, table, sidc, 4);
       if (swift !== null) emitted.push(swift);
     }
+    // An icon whose every instruction was skipped (empty path data in
+    // milsymbol's table) draws nothing there and does not belong in
+    // the library: lookup misses render frame-only, the same result.
+    if (emitted.length === 0) {
+      console.warn(`NOTE ${sidc}: no drawable instructions after conversion; icon skipped`);
+      continue;
+    }
     const body = emitted.join(",\n        ");
 
     const mapKey = `${key.family}:${key.code}`;
@@ -733,10 +767,25 @@ function main() {
     a.family === b.family ? a.code.localeCompare(b.code) : a.family.localeCompare(b.family)
   );
 
-  const functions = [];
-  const tableLines = [];
+  // Icons shard by family plus the code's first two characters (the
+  // delta symbol set; the charlie scheme and dimension): one generated
+  // file per shard compiles in parallel and keeps incremental builds
+  // incremental, plus a root file that assembles the registry.
+  const shards = new Map();
+  function shard(icon) {
+    const key = `${icon.family}_${icon.code.slice(0, 2).replace(/[^A-Za-z0-9]/g, "_")}`;
+    let bucket = shards.get(key);
+    if (!bucket) {
+      bucket = { key, functions: [], tableLines: [], count: 0 };
+      shards.set(key, bucket);
+    }
+    return bucket;
+  }
+
   let fullFrameCount = 0;
   for (const icon of sorted) {
+    const bucket = shard(icon);
+    bucket.count += 1;
     const baseName = `icon_${icon.family}_${icon.code.replace(/[^A-Za-z0-9]/g, "_")}`;
     const variants = [...icon.variants.entries()];
     const bodies = new Set(variants.map(([, variant]) => variant.body));
@@ -744,11 +793,11 @@ function main() {
 
     if (bodies.size === 1) {
       // Identical under every extracted base: universal.
-      tableLines.push(
+      bucket.tableLines.push(
         `        table[IconKey(family: .${icon.family}, code: "${icon.code}")] = ` +
         `.universal(${baseName}())`
       );
-      functions.push(
+      bucket.functions.push(
         `    // ${allSidcs.join(", ")}\n` +
         `    private static func ${baseName}() -> [DrawInstruction] { [\n` +
         `        ${variants[0][1].body},\n` +
@@ -770,21 +819,21 @@ function main() {
         const variant = icon.variants.get(base);
         const name = `${baseName}_${base}`;
         entries.push(`.${base}: ${name}()`);
-        functions.push(
+        bucket.functions.push(
           `    // ${variant.sidcs.join(", ")}\n` +
           `    private static func ${name}() -> [DrawInstruction] { [\n` +
           `        ${variant.body},\n` +
           `    ] }`
         );
       }
-      tableLines.push(
+      bucket.tableLines.push(
         `        table[IconKey(family: .${icon.family}, code: "${icon.code}")] = ` +
         `.perBase([${entries.join(", ")}])`
       );
     }
   }
 
-  const swift = `// Copyright 2026 Jason Griffin
+  const license = `// Copyright 2026 Jason Griffin
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -800,26 +849,49 @@ function main() {
 //
 // GENERATED FILE - do not edit by hand.
 // Produced by tools/extract/codegen.js from milsymbol ${extracted.milsymbolVersion}
-// draw instructions (${sorted.length} icons). Icon geometry data is ported
-// from milsymbol (https://github.com/spatialillusions/milsymbol),
+// draw instructions. Icon geometry data is ported from milsymbol
+// (https://github.com/spatialillusions/milsymbol),
 // Copyright (c) Mans Beckman, MIT License. See NOTICE.
-
-extension IconLibrary {
-    /// The generated icon table.
-    static let generatedIcons: [IconKey: IconEntry] = {
-        var table: [IconKey: IconEntry] = [:]
-        table.reserveCapacity(${sorted.length})
-${tableLines.join("\n")}
-        return table
-    }()
-
-${functions.join("\n\n")}
-}
 `;
 
-  writeFileSync(args.out, swift);
+  const outDir = dirname(args.out);
+  const iconsDir = join(outDir, "Icons");
+  mkdirSync(iconsDir, { recursive: true });
+  // Remove stale shards (and only shards) from prior runs.
+  for (const name of readdirSync(iconsDir)) {
+    if (/^GeneratedIcons\+.*\.swift$/.test(name)) unlinkSync(join(iconsDir, name));
+  }
+
+  const sortedShards = [...shards.values()].sort((a, b) => a.key.localeCompare(b.key));
+  for (const bucket of sortedShards) {
+    const swift = license +
+      `\nextension IconLibrary {\n` +
+      `    /// ${bucket.count} icons.\n` +
+      `    static func registerGenerated_${bucket.key}(into table: inout [IconKey: IconEntry]) {\n` +
+      `${bucket.tableLines.join("\n")}\n` +
+      `    }\n\n` +
+      `${bucket.functions.join("\n\n")}\n` +
+      `}\n`;
+    writeFileSync(join(iconsDir, `GeneratedIcons+${bucket.key}.swift`), swift);
+  }
+
+  const rootSwift = license +
+    `\nextension IconLibrary {\n` +
+    `    /// The generated icon table: ${sorted.length} icons across ` +
+    `${sortedShards.length} shards.\n` +
+    `    static let generatedIcons: [IconKey: IconEntry] = {\n` +
+    `        var table: [IconKey: IconEntry] = [:]\n` +
+    `        table.reserveCapacity(${sorted.length})\n` +
+    sortedShards.map((bucket) =>
+      `        registerGenerated_${bucket.key}(into: &table)`).join("\n") + `\n` +
+    `        return table\n` +
+    `    }()\n` +
+    `}\n`;
+  writeFileSync(args.out, rootSwift);
+
   console.log(
-    `Wrote ${sorted.length} icons to ${args.out}` +
+    `Wrote ${sorted.length} icons to ${args.out} + ${sortedShards.length} ` +
+    `shard files in ${iconsDir}` +
     (fullFrameCount ? ` (${fullFrameCount} full-frame with per-base variants)` : "") +
     (skippedInvalid ? ` (${skippedInvalid} skipped as validIcon false)` : "")
   );
