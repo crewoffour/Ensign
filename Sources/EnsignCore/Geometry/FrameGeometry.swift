@@ -381,12 +381,19 @@ public enum SymbolComposer {
 
     public static func geometry(for symbol: MilSymbol) -> SymbolGeometry {
         let frame = symbol.frame
-        guard let shape = frame.shape else {
-            return SymbolGeometry(instructions: [])
-        }
-
         let base = symbol.affiliation.frameBase
         var instructions: [DrawInstruction] = []
+
+        // Domains with no frame rendering (control measure points and
+        // other frameless symbol sets) still render their icon when the
+        // library carries one: milsymbol treats them as icon-only, like
+        // unframed sea own tracks.
+        guard let shape = frame.shape else {
+            if let icon = IconLibrary.instructions(for: symbol.iconKey, base: base) {
+                instructions.append(contentsOf: icon)
+            }
+            return SymbolGeometry(instructions: instructions)
+        }
 
         if frame.isFramed {
             // The frame itself: affiliation fill under a solid stroke.

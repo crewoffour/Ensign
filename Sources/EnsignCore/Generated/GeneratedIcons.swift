@@ -14,7 +14,7 @@
 //
 // GENERATED FILE - do not edit by hand.
 // Produced by tools/extract/codegen.js from milsymbol 3.0.4
-// draw instructions (19 icons). Icon geometry data is ported
+// draw instructions (21 icons). Icon geometry data is ported
 // from milsymbol (https://github.com/spatialillusions/milsymbol),
 // Copyright (c) Mans Beckman, MIT License. See NOTICE.
 
@@ -22,7 +22,7 @@ extension IconLibrary {
     /// The generated icon table.
     static let generatedIcons: [IconKey: IconEntry] = {
         var table: [IconKey: IconEntry] = [:]
-        table.reserveCapacity(19)
+        table.reserveCapacity(21)
         table[IconKey(family: .delta, code: "01110100")] = .universal(icon_delta_01110100())
         table[IconKey(family: .delta, code: "01110200")] = .universal(icon_delta_01110200())
         table[IconKey(family: .delta, code: "01110300")] = .universal(icon_delta_01110300())
@@ -34,6 +34,8 @@ extension IconLibrary {
         table[IconKey(family: .delta, code: "10141801")] = .universal(icon_delta_10141801())
         table[IconKey(family: .delta, code: "10160000")] = .universal(icon_delta_10160000())
         table[IconKey(family: .delta, code: "10161300")] = .perBase([.friend: icon_delta_10161300_friend(), .hostile: icon_delta_10161300_hostile(), .neutral: icon_delta_10161300_neutral(), .unknown: icon_delta_10161300_unknown()])
+        table[IconKey(family: .delta, code: "25130300")] = .universal(icon_delta_25130300())
+        table[IconKey(family: .delta, code: "25160100")] = .universal(icon_delta_25160100())
         table[IconKey(family: .delta, code: "30120000")] = .universal(icon_delta_30120000())
         table[IconKey(family: .delta, code: "30140100")] = .universal(icon_delta_30140100())
         table[IconKey(family: .delta, code: "30140200")] = .universal(icon_delta_30140200())
@@ -481,6 +483,97 @@ extension IconLibrary {
             .move(to: SymbolPoint(30.75, 100)),
             .line(to: SymbolPoint(169.25, 100)),
         ], style: DrawStyle(fill: .iconFill, stroke: .iconStroke, strokeWidth: 3, dash: nil))),
+    ] }
+
+    // 130425000013030000000000000000, 130325000013030000000000000000
+    private static func icon_delta_25130300() -> [DrawInstruction] { [
+        .path(SymbolPath(segments: [
+            .move(to: SymbolPoint(60, 45)),
+            .line(to: SymbolPoint(140, 45)),
+            .move(to: SymbolPoint(100, 100)),
+            .line(to: SymbolPoint(60, 45)),
+            .line(to: SymbolPoint(60, -60)),
+            .line(to: SymbolPoint(140, -60)),
+            .line(to: SymbolPoint(140, 45)),
+            .close,
+        ], style: DrawStyle(fill: .none, stroke: .iconStroke, strokeWidth: 3, dash: nil))),
+        .path(SymbolPath(segments: [
+            .move(to: SymbolPoint(76.638184, -24.377441)),
+            .line(to: SymbolPoint(76.638184, -24.377441)),
+            .quadCurve(to: SymbolPoint(82.978516, -28.95752), control: SymbolPoint(81.201172, -24.377441)),
+            .line(to: SymbolPoint(82.978516, -28.95752)),
+            .line(to: SymbolPoint(87.370605, -27.299805)),
+            .quadCurve(to: SymbolPoint(83.209229, -22.113037), control: SymbolPoint(85.952148, -23.813477)),
+            .quadCurve(to: SymbolPoint(76.638184, -20.412598), control: SymbolPoint(80.466309, -20.412598)),
+            .line(to: SymbolPoint(76.638184, -20.412598)),
+            .quadCurve(to: SymbolPoint(67.657471, -23.702393), control: SymbolPoint(70.827637, -20.412598)),
+            .quadCurve(to: SymbolPoint(64.487305, -32.905273), control: SymbolPoint(64.487305, -26.992188)),
+            .line(to: SymbolPoint(64.487305, -32.905273)),
+            .quadCurve(to: SymbolPoint(67.546387, -42.01416), control: SymbolPoint(64.487305, -38.835449)),
+            .quadCurve(to: SymbolPoint(76.416016, -45.192871), control: SymbolPoint(70.605469, -45.192871)),
+            .line(to: SymbolPoint(76.416016, -45.192871)),
+            .quadCurve(to: SymbolPoint(83.320313, -43.492432), control: SymbolPoint(80.654297, -45.192871)),
+            .quadCurve(to: SymbolPoint(87.062988, -38.493652), control: SymbolPoint(85.986328, -41.791992)),
+            .line(to: SymbolPoint(87.062988, -38.493652)),
+            .line(to: SymbolPoint(82.619629, -37.280273)),
+            .quadCurve(to: SymbolPoint(80.406494, -40.159912), control: SymbolPoint(82.055664, -39.091797)),
+            .quadCurve(to: SymbolPoint(76.518555, -41.228027), control: SymbolPoint(78.757324, -41.228027)),
+            .line(to: SymbolPoint(76.518555, -41.228027)),
+            .quadCurve(to: SymbolPoint(71.331787, -39.108887), control: SymbolPoint(73.100586, -41.228027)),
+            .quadCurve(to: SymbolPoint(69.562988, -32.905273), control: SymbolPoint(69.562988, -36.989746)),
+            .line(to: SymbolPoint(69.562988, -32.905273)),
+            .quadCurve(to: SymbolPoint(71.383057, -26.564941), control: SymbolPoint(69.562988, -28.752441)),
+            .quadCurve(to: SymbolPoint(76.638184, -24.377441), control: SymbolPoint(73.203125, -24.377441)),
+            .close,
+            .move(to: SymbolPoint(113.278809, -20.754395)),
+            .line(to: SymbolPoint(107.331543, -20.754395)),
+            .line(to: SymbolPoint(98.684082, -31.811523)),
+            .line(to: SymbolPoint(95.710449, -29.538574)),
+            .line(to: SymbolPoint(95.710449, -20.754395)),
+            .line(to: SymbolPoint(90.668945, -20.754395)),
+            .line(to: SymbolPoint(90.668945, -44.833984)),
+            .line(to: SymbolPoint(95.710449, -44.833984)),
+            .line(to: SymbolPoint(95.710449, -33.913574)),
+            .line(to: SymbolPoint(106.5625, -44.833984)),
+            .line(to: SymbolPoint(112.441406, -44.833984)),
+            .line(to: SymbolPoint(102.15332, -34.648438)),
+            .line(to: SymbolPoint(113.278809, -20.754395)),
+            .close,
+            .move(to: SymbolPoint(135.751953, -37.211914)),
+            .line(to: SymbolPoint(135.751953, -37.211914)),
+            .quadCurve(to: SymbolPoint(134.692383, -33.059082), control: SymbolPoint(135.751953, -34.887695)),
+            .quadCurve(to: SymbolPoint(131.658936, -30.230713), control: SymbolPoint(133.632813, -31.230469)),
+            .quadCurve(to: SymbolPoint(126.967773, -29.230957), control: SymbolPoint(129.685059, -29.230957)),
+            .line(to: SymbolPoint(126.967773, -29.230957)),
+            .line(to: SymbolPoint(120.986328, -29.230957)),
+            .line(to: SymbolPoint(120.986328, -20.754395)),
+            .line(to: SymbolPoint(115.944824, -20.754395)),
+            .line(to: SymbolPoint(115.944824, -44.833984)),
+            .line(to: SymbolPoint(126.762695, -44.833984)),
+            .quadCurve(to: SymbolPoint(133.419189, -42.843018), control: SymbolPoint(131.086426, -44.833984)),
+            .quadCurve(to: SymbolPoint(135.751953, -37.211914), control: SymbolPoint(135.751953, -40.852051)),
+            .close,
+            .move(to: SymbolPoint(130.67627, -37.126465)),
+            .line(to: SymbolPoint(130.67627, -37.126465)),
+            .quadCurve(to: SymbolPoint(126.19873, -40.92041), control: SymbolPoint(130.67627, -40.92041)),
+            .line(to: SymbolPoint(126.19873, -40.92041)),
+            .line(to: SymbolPoint(120.986328, -40.92041)),
+            .line(to: SymbolPoint(120.986328, -33.110352)),
+            .line(to: SymbolPoint(126.335449, -33.110352)),
+            .quadCurve(to: SymbolPoint(129.54834, -34.144287), control: SymbolPoint(128.42041, -33.110352)),
+            .quadCurve(to: SymbolPoint(130.67627, -37.126465), control: SymbolPoint(130.67627, -35.178223)),
+            .close,
+        ], style: DrawStyle(fill: .iconFill, stroke: .none, strokeWidth: 0, dash: nil))),
+    ] }
+
+    // 130425000016010000000000000000, 130325000016010000000000000000
+    private static func icon_delta_25160100() -> [DrawInstruction] { [
+        .path(SymbolPath(segments: [
+            .move(to: SymbolPoint(100, 45)),
+            .line(to: SymbolPoint(147.6, 127.5)),
+            .line(to: SymbolPoint(52.4, 127.5)),
+            .close,
+        ], style: DrawStyle(fill: .none, stroke: .iconStroke, strokeWidth: 3, dash: nil))),
     ] }
 
     // 130330000012000000000000000000, 130230000012000000000000000000, 130630000012000000000000000000

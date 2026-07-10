@@ -102,13 +102,18 @@
 # Pending sea surface: dashed, unknown fill
 130030000000000000000000000000
 
-# Deferred to Session 7 (parse correctly today, render incompletely;
-# keep in Beacon via the existing atlas until then):
+# Control measure points (Session 7c: icon-only, no frame; the
+# checkpoint icon carries CKP text converted to outlines)
+130425000016010000000000000000
+130325000016010000000000000000
+130425000013030000000000000000
+130325000013030000000000000000
+
+# Still deferred (parse correctly today, render incompletely; keep in
+# Beacon via the existing atlas until then):
 #   nav-hazard   130436000011010000000000000000  set 36 mine warfare
 #                (MEDAL fill rules)
-#   cbrn         130420000011060000000000000000  set 20 installation
-#                (installation bar)
-#   observation-post 130425000016010000000000000000  set 25 control
-#   checkpoint       130425000013030000000000000000  measure rendering
-#   command-post 130410020000000000000000000000  HQ staff
-#   joker/faker identity variants (J/K text amplifiers, frame remap)
+#   cbrn renders its frame and installation bar since 7a; its set 20
+#     icon (110600) extracts whenever wanted
+#   command-post renders frame and HQ staff since 7a
+#   joker/faker: rendered correctly since 7b (friend frame, J/K)

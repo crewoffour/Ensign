@@ -95,7 +95,7 @@ dependencies: [
 4. Maritime-first icon subset (done)
 5. Rasterization, sprite atlas generation, SwiftUI views (done)
 6. Beacon integration via runtime rendering (done)
-7. Amplifiers and modifiers; expanded coverage
+7. Amplifiers and modifiers (done)
 8. Migration to the authoritative JMSML symbol data
 
 ## License

@@ -1,0 +1,15 @@
+# Session 7c worklist: control measure points (set 25), Beacon's two
+# atlas stragglers plus friend variants. These are icon-only symbols
+# (no frame), so run the FULL pipeline: extract --icon-extract,
+# keys, codegen, rebuild, then reference-render + render + diff.
+# milsymbol marks them unframed; the extraction takes the full build
+# as the icon, exactly like the sea own track.
+
+# Observation post (Beacon: observation-post)
+130425000016010000000000000000
+130325000016010000000000000000
+
+# Checkpoint (Beacon: checkpoint; the icon carries "CKP" text, which
+# codegen converts to outlines)
+130425000013030000000000000000
+130325000013030000000000000000

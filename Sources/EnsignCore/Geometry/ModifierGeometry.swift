@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 // The amplifier geometry in this file (headquarters staff, task force
-// bracket, installation bar, feint/dummy caret, echelon marks, and
-// mobility indicators) is ported coordinate-for-coordinate from
-// milsymbol's symbolfunctions/modifier.js
+// bracket, installation bar, feint/dummy caret, echelon marks,
+// mobility indicators, and the direction of movement arrow) is ported
+// coordinate-for-coordinate from milsymbol's
+// symbolfunctions/modifier.js and directionarrow.js
 // (https://github.com/spatialillusions/milsymbol), Copyright (c)
 // Mans Beckman, MIT License, for oracle pixel parity. See NOTICE.
 
@@ -32,6 +33,35 @@ public enum ModifierGeometry {
     /// The feint/dummy caret stroke, dashed with milsymbol's
     /// feintDummy array.
     static let feintDummyStroke = DrawStyle(stroke: .frameStroke, strokeWidth: 4, dash: [8, 8])
+
+    // MARK: - Direction of movement arrow
+
+    /// The 2525 direction of movement indicator as standalone geometry:
+    /// a north-pointing arrow from the canvas center (the symbol
+    /// anchor) with milsymbol's shaft length and dart, in the icon
+    /// color. Rendered full-canvas, the rotation anchor is the image
+    /// center, so a map engine can place it at the track position and
+    /// rotate it by course while the symbol itself stays upright, per
+    /// the standard.
+    ///
+    /// This is milsymbol's centered (air and sea) variant; the ground
+    /// offset-line variant keeps its vertical line unrotated and so
+    /// cannot ride a rotating sprite. Map clients using one arrow asset
+    /// for all dimensions is the documented simplification.
+    public static func directionOfMovementArrow() -> SymbolGeometry {
+        // M100,100 l0,-75 -5,3 5,-15 5,15 -5,-3 (arrowLength 95)
+        let style = DrawStyle(fill: .iconStroke, stroke: .iconStroke, strokeWidth: 4)
+        return SymbolGeometry(instructions: [
+            .path(SymbolPath(segments: [
+                .move(to: SymbolPoint(100, 100)),
+                .line(to: SymbolPoint(100, 25)),
+                .line(to: SymbolPoint(95, 28)),
+                .line(to: SymbolPoint(100, 13)),
+                .line(to: SymbolPoint(105, 28)),
+                .line(to: SymbolPoint(100, 25)),
+            ], style: style)),
+        ])
+    }
 
     // MARK: - Exercise amplifier text
 

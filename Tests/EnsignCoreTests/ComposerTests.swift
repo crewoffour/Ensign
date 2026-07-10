@@ -390,6 +390,35 @@ final class ComposerTests: XCTestCase {
             try MilSymbol("13051000000000000000").renderKey)
     }
 
+    // MARK: - Direction arrow and frameless icons (Session 7c)
+
+    func testDirectionArrowGeometry() throws {
+        let arrow = ModifierGeometry.directionOfMovementArrow()
+        XCTAssertEqual(arrow.instructions.count, 1)
+        // Anchored at the canvas center, reaching to y 13 (milsymbol's
+        // 95-unit arrow: 75-unit shaft plus the dart).
+        let extent = try XCTUnwrap(arrow.extent)
+        XCTAssertEqual(extent.y1, 11, accuracy: 0.001)   // 13 - stroke/2
+        XCTAssertEqual(extent.y2, 102, accuracy: 0.001)  // 100 + stroke/2
+        XCTAssertEqual((extent.x1 + extent.x2) / 2, 100, accuracy: 0.001)
+    }
+
+    func testFramelessDomainsRenderTheirIconWhenPresent() throws {
+        // Control measure points have no frame; they compose to exactly
+        // their icon instructions (empty until the icons are extracted),
+        // never to frame geometry. Same invariant style as the own
+        // track test: holds for any library state.
+        let checkpoint = try MilSymbol("130425000013030000000000000000")
+        XCTAssertNil(checkpoint.frame.shape)
+        let icon = IconLibrary.instructions(
+            for: checkpoint.iconKey,
+            base: checkpoint.affiliation.frameBase
+        ) ?? []
+        XCTAssertEqual(
+            SymbolComposer.geometry(for: checkpoint).instructions, icon,
+            "frameless symbols must compose to exactly their icon instructions")
+    }
+
     // MARK: - Fill classes and palette
 
     func testFillClassMapping() throws {
