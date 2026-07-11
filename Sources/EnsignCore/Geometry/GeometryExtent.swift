@@ -22,6 +22,13 @@ extension SymbolGeometry {
     /// a few canvas units generous, which is exactly right for fitting
     /// sprites into cells.
     public var extent: FrameBounds? {
+        extent(includingStrokeMargins: true)
+    }
+
+    /// The extent with stroke margins optional: geometric extents
+    /// (margins off) match the reference renderer's bbox arithmetic,
+    /// which tracks path coordinates without stroke bleed.
+    public func extent(includingStrokeMargins: Bool) -> FrameBounds? {
         var minX = Double.infinity
         var minY = Double.infinity
         var maxX = -Double.infinity
@@ -39,7 +46,7 @@ extension SymbolGeometry {
         for instruction in instructions {
             switch instruction {
             case .path(let path):
-                let margin = path.style.stroke == ColorRole.none
+                let margin = (path.style.stroke == ColorRole.none || !includingStrokeMargins)
                     ? 0
                     : path.style.strokeWidth / 2
                 for segment in path.segments {
@@ -60,10 +67,36 @@ extension SymbolGeometry {
                     }
                 }
             case .circle(let center, let radius, let style):
-                let margin = style.stroke == ColorRole.none
+                let margin = (style.stroke == ColorRole.none || !includingStrokeMargins)
                     ? 0
                     : style.strokeWidth / 2
                 cover(center, margin: radius + margin)
+            case .text(let text):
+                // The anchor-adjusted estimated box, matching
+                // milsymbol's label bbox rule: width by the string
+                // width estimator, height one font size above the
+                // alphabetic baseline (or centered for middle
+                // baselines).
+                let width = StringWidth.estimate(
+                    text.text, fontSize: text.fontSize, spaceTextIcon: 0)
+                let x1: Double
+                switch text.anchor {
+                case .start: x1 = text.x
+                case .middle: x1 = text.x - width / 2
+                case .end: x1 = text.x - width
+                }
+                let y1: Double
+                let y2: Double
+                switch text.baseline {
+                case .alphabetic:
+                    y1 = text.y - text.fontSize
+                    y2 = text.y
+                case .middle:
+                    y1 = text.y - text.fontSize / 2
+                    y2 = text.y + text.fontSize / 2
+                }
+                cover(SymbolPoint(x1, y1), margin: 0)
+                cover(SymbolPoint(x1 + width, y2), margin: 0)
             }
         }
 

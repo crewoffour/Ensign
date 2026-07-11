@@ -36,6 +36,7 @@ const { values: args } = parseArgs({
     "no-frame": { type: "boolean", default: false },
     "no-fill": { type: "boolean", default: false },
     standard: { type: "string", default: "" },
+    fields: { type: "string" },
   },
 });
 
@@ -113,7 +114,10 @@ function main() {
   }
   for (const sidc of sidcs) {
     try {
-      const symbol = new ms.Symbol(sidc, symbolOptions());
+      const symbol = new ms.Symbol(sidc, {
+        ...symbolOptions(),
+        ...(args.fields ? { infoFields: true, ...JSON.parse(args.fields) } : {}),
+      });
       if (containsText(symbol.drawInstructions)) {
         withText += 1;
         if (FONT_FILES.length === 0) {
@@ -122,8 +126,20 @@ function main() {
             `(see README, Fonts section)`);
         }
       }
-      const resvg = new Resvg(fullCanvasSVG(symbol), {
-        fitTo: { mode: "width", value: pixels },
+      // Info fields grow milsymbol's viewbox beyond the square
+      // canvas; render the native SVG at the same pixels-per-canvas-
+      // unit scale so dimensions match Ensign's grown-canvas output.
+      let svg = fullCanvasSVG(symbol);
+      let fitWidth = pixels;
+      if (args.fields) {
+        svg = symbol.asSVG();
+        const viewBox = svg.match(/viewBox="([-\d.]+) ([-\d.]+) ([-\d.]+) ([-\d.]+)"/);
+        if (viewBox) {
+          fitWidth = Math.round((Number(viewBox[3]) * pixels) / 200);
+        }
+      }
+      const resvg = new Resvg(svg, {
+        fitTo: { mode: "width", value: fitWidth },
         font: FONT_FILES.length > 0
           ? {
               loadSystemFonts: false,

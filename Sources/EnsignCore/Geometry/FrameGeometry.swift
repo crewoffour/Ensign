@@ -21,10 +21,10 @@
 /// The axis-aligned bounds of a frame on the 200x200 canvas, used later
 /// for amplifier and text placement.
 public struct FrameBounds: Hashable, Sendable {
-    public let x1: Double
-    public let y1: Double
-    public let x2: Double
-    public let y2: Double
+    public var x1: Double
+    public var y1: Double
+    public var x2: Double
+    public var y2: Double
 
     public init(x1: Double, y1: Double, x2: Double, y2: Double) {
         self.x1 = x1
@@ -555,6 +555,45 @@ public enum SymbolComposer {
         }
 
         return SymbolGeometry(instructions: instructions)
+    }
+
+    /// Composes a symbol with its info fields: the plain geometry plus
+    /// the standard's text amplifier fields laid out around the frame,
+    /// with the canvas grown to hold them. Opt-in and separate from
+    /// the plain overload: field text is arbitrary per instance, so
+    /// this output is not covered by the render key and is unsuitable
+    /// for shared-image caching. Frameless symbols (control measures,
+    /// own tracks) render their fields against the standard canvas.
+    public static func geometry(
+        for symbol: MilSymbol,
+        infoFields fields: InfoFields
+    ) -> SymbolGeometry {
+        var geometry = geometry(for: symbol)
+        guard !fields.isEmpty else { return geometry }
+        let frameBounds = symbol.frame.shape.map { FrameGeometry.bounds(for: $0) }
+            ?? FrameBounds(x1: 0, y1: 0, x2: Ensign.canvasSize, y2: Ensign.canvasSize)
+        let output = InfoFieldLayout.layout(
+            fields: fields, symbol: symbol, frameBounds: frameBounds)
+        geometry.instructions.append(contentsOf: output.instructions)
+        // The grown canvas is the union of the field layout's bounds
+        // and the full symbol's geometric extent (amplifiers like HQ
+        // staffs reach beyond the frame), plus the reference
+        // renderer's uniform viewbox margin of one stroke width per
+        // side. Both rules ported from milsymbol's grown SVG viewbox.
+        var bounds = output.bounds
+        if let extent = geometry.extent(includingStrokeMargins: false) {
+            bounds.x1 = min(bounds.x1, extent.x1)
+            bounds.y1 = min(bounds.y1, extent.y1)
+            bounds.x2 = max(bounds.x2, extent.x2)
+            bounds.y2 = max(bounds.y2, extent.y2)
+        }
+        let margin = 4.0
+        bounds.x1 -= margin
+        bounds.y1 -= margin
+        bounds.x2 += margin
+        bounds.y2 += margin
+        geometry.canvasBounds = bounds
+        return geometry
     }
 
     /// The condition color role for a status, or `nil` for statuses

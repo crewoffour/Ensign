@@ -40,7 +40,12 @@ let package = Package(
         ),
         .target(
             name: "EnsignRender",
-            dependencies: ["EnsignCore"]
+            dependencies: ["EnsignCore"],
+            resources: [
+                // Liberation Sans (SIL OFL), shaping the info field
+                // text; see Fonts/LICENSE and NOTICE.
+                .copy("Fonts"),
+            ]
         ),
         .target(
             name: "EnsignUI",

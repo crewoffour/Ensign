@@ -51,6 +51,36 @@ public struct SymbolRenderer: Sendable {
 
     // MARK: - Images
 
+    /// Renders geometry with a grown canvas (info fields) into a
+    /// bitmap sized by scale: the output is canvasBounds proportioned
+    /// at `pixelsPerCanvasUnit` pixels per canvas unit, matching the
+    /// reference renderer's viewbox scaling. Geometry without grown
+    /// bounds renders the standard square canvas at the same scale.
+    public func image(
+        geometry: SymbolGeometry,
+        fillClass: FillClass,
+        pixelsPerCanvasUnit scale: Double
+    ) -> CGImage? {
+        guard !geometry.instructions.isEmpty, scale > 0 else { return nil }
+        let bounds = geometry.canvasBounds
+            ?? FrameBounds(x1: 0, y1: 0, x2: geometry.canvasSize, y2: geometry.canvasSize)
+        let width = Int((Double(bounds.x2 - bounds.x1) * scale).rounded())
+        let height = Int((Double(bounds.y2 - bounds.y1) * scale).rounded())
+        guard width > 0, height > 0,
+              let space = CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(
+                data: nil, width: width, height: height,
+                bitsPerComponent: 8, bytesPerRow: 0, space: space,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            return nil
+        }
+        context.translateBy(x: 0, y: CGFloat(height))
+        context.scaleBy(x: CGFloat(scale), y: -CGFloat(scale))
+        context.translateBy(x: -CGFloat(bounds.x1), y: -CGFloat(bounds.y1))
+        drawInstructions(geometry, fillClass: fillClass, in: context)
+        return context.makeImage()
+    }
+
     /// Renders a symbol into a square bitmap of the given pixel size.
     /// Returns `nil` for unframeable symbols (empty geometry) or an
     /// invalid size.
@@ -189,6 +219,9 @@ public struct SymbolRenderer: Sendable {
                 )
                 let path = CGPath(ellipseIn: rect, transform: nil)
                 paint(path, style: style, fillClass: fillClass, in: context)
+            case .text(let instruction):
+                TextShaper.draw(instruction, palette: palette,
+                                fillClass: fillClass, in: context)
             }
         }
     }

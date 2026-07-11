@@ -112,8 +112,17 @@ let renderer = SymbolRenderer(palette: .light)
 
 // MARK: - Oracle render mode
 
-func runRenderMode(listPath: String, outputDir: String, pixels: Int) {
+func runRenderMode(listPath: String, outputDir: String, pixels: Int, fieldsJSON: String?) {
     print("Ensign \(Ensign.version) - oracle render mode")
+    var infoFields: InfoFields?
+    if let fieldsJSON {
+        guard let data = fieldsJSON.data(using: .utf8),
+              let decoded = try? JSONDecoder().decode(InfoFields.self, from: data) else {
+            print("Could not decode --fields JSON; field names mirror milsymbol's option names.")
+            exit(2)
+        }
+        infoFields = decoded
+    }
     let sidcs: [String]
     do {
         sidcs = try readSIDCList(at: listPath)
@@ -137,7 +146,17 @@ func runRenderMode(listPath: String, outputDir: String, pixels: Int) {
     for sidc in sidcs {
         do {
             let symbol = try MilSymbol(sidc)
-            guard let data = renderer.pngData(for: symbol, size: pixels) else {
+            let pngData: Data?
+            if let infoFields {
+                let geometry = SymbolComposer.geometry(for: symbol, infoFields: infoFields)
+                pngData = renderer.image(
+                    geometry: geometry, fillClass: symbol.fillClass,
+                    pixelsPerCanvasUnit: Double(pixels) / Ensign.canvasSize
+                ).flatMap { SymbolRenderer.pngData(from: $0) }
+            } else {
+                pngData = renderer.pngData(for: symbol, size: pixels)
+            }
+            guard let data = pngData else {
                 if symbol.frame.shape == nil {
                     print("SKIP \(sidc): no frame rendering defined for this domain")
                 } else if !symbol.frame.isFramed {
@@ -343,7 +362,9 @@ if arguments.count >= 2 && arguments[1] == "render" {
         exit(2)
     }
     let pixels = arguments.count >= 5 ? Int(arguments[4]) ?? 200 : 200
-    runRenderMode(listPath: arguments[2], outputDir: arguments[3], pixels: pixels)
+    let fieldsIndex = arguments.firstIndex(of: "--fields")
+    let fieldsJSON = fieldsIndex.flatMap { arguments.indices.contains($0 + 1) ? arguments[$0 + 1] : nil }
+    runRenderMode(listPath: arguments[2], outputDir: arguments[3], pixels: pixels, fieldsJSON: fieldsJSON)
 } else {
     runContactSheet()
 }

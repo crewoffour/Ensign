@@ -1,0 +1,21 @@
+# Session 13 info-field oracle rows: one symbol per dimension family,
+# rendered by both sides with the same --fields JSON (see
+# fields-demo.json). Verifies row assignment, anchoring, text shaping,
+# and the grown canvas.
+
+# Ground unit (infantry, friend)
+10031000001211000000
+# Ground equipment (armored personnel carrier family, hostile)
+10061500001201000000
+# Air (fixed wing, friend)
+10030100001101000000
+# Sea surface (line combatant, friend)
+10033000001202000000
+# Subsurface (submarine, hostile)
+10063500001101000000
+# Dismounted individual (neutral)
+10042700001101000000
+# Headquarters with staff (special headquarters text renders inside)
+10031002000000000000
+# Charlie infantry (letter dialect through the ground layout)
+SFGPUCI--------

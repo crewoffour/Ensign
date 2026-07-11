@@ -54,3 +54,8 @@ Copyright (c) 2012 Red Hat, Inc.
 The OFL text is available at https://openfontlicense.org and is
 distributed with the Liberation Fonts releases. The Reserved Font
 Names are not used by this project.
+
+Liberation Sans fonts (Sources/EnsignRender/Fonts/) are bundled for
+info field text shaping, under the SIL Open Font License 1.1; the
+license text accompanies the font files. The same font files drive the
+reference renderer, keeping shaped text oracle-comparable.

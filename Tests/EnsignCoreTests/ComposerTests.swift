@@ -153,6 +153,8 @@ final class ComposerTests: XCTestCase {
                     XCTAssertFalse(path.segments.isEmpty)
                 case .circle(_, let radius, _):
                     XCTAssertEqual(radius, 60)
+                case .text:
+                    XCTFail("frames are never text")
                 }
             }
         }
@@ -575,6 +577,57 @@ final class ComposerTests: XCTestCase {
         let baseCount = SymbolComposer.geometry(for: base).instructions.count
         let combinedCount = SymbolComposer.geometry(for: combined).instructions.count
         XCTAssertEqual(combinedCount, baseCount + modifierIcon.count)
+    }
+
+    // MARK: - Info fields (Session 13)
+
+    func testInfoFieldLayoutRowsAndGrowth() throws {
+        var fields = InfoFields()
+        fields.uniqueDesignation = "A21"
+        fields.dtg = "30140000ZSEP97"
+        fields.higherFormation = "X"
+        let symbol = try MilSymbol("10031000001211000000")
+        let plain = SymbolComposer.geometry(for: symbol)
+        let withFields = SymbolComposer.geometry(for: symbol, infoFields: fields)
+        // Three populated fields: three text instructions appended.
+        XCTAssertEqual(withFields.instructions.count, plain.instructions.count + 3)
+        XCTAssertNil(plain.canvasBounds)
+        let bounds = try XCTUnwrap(withFields.canvasBounds)
+        // Ground layout: dtg is L1 (end-anchored left, first row above
+        // center), uniqueDesignation L4, higherFormation R4.
+        let texts: [TextInstruction] = withFields.instructions.compactMap {
+            if case .text(let t) = $0 { return t } else { return nil }
+        }
+        let dtg = try XCTUnwrap(texts.first { $0.text == "30140000ZSEP97" })
+        XCTAssertEqual(dtg.anchor, .end)
+        XCTAssertEqual(dtg.y, 100 - 1.5 * InfoFieldLayout.fontSize)
+        let designation = try XCTUnwrap(texts.first { $0.text == "A21" })
+        XCTAssertEqual(designation.y, 100 + 1.5 * InfoFieldLayout.fontSize)
+        // The canvas grows left by the dtg width estimate and gains
+        // the row-4 space below.
+        let frame = FrameGeometry.bounds(for: try XCTUnwrap(symbol.frame.shape))
+        let expectedLeft = frame.x1 - StringWidth.estimate(
+            "30140000ZSEP97", fontSize: InfoFieldLayout.fontSize,
+            spaceTextIcon: InfoFieldLayout.spaceTextIcon)
+        // The final bounds carry the reference renderer's uniform
+        // 4-unit viewbox margin.
+        XCTAssertEqual(bounds.x1, expectedLeft - 4, accuracy: 0.001)
+        XCTAssertEqual(bounds.y2, 100 + 1.7 * InfoFieldLayout.fontSize + 4, accuracy: 0.001)
+        // Empty fields change nothing.
+        XCTAssertEqual(
+            SymbolComposer.geometry(for: symbol, infoFields: InfoFields()).instructions.count,
+            plain.instructions.count)
+    }
+
+    func testStringWidthEstimatorMatchesMilsymbol() {
+        // W is the widest at 32; unknown characters cost 28.5; the
+        // fontSize/30 scaling and spacing addend apply.
+        XCTAssertEqual(StringWidth.estimate("W", fontSize: 30, spaceTextIcon: 0), 32)
+        XCTAssertEqual(StringWidth.estimate("", fontSize: 40, spaceTextIcon: 20), 0)
+        XCTAssertEqual(StringWidth.estimate("A21", fontSize: 30, spaceTextIcon: 20),
+                       23 + 19 + 19 + 20, accuracy: 0.001)
+        XCTAssertEqual(StringWidth.estimate("素", fontSize: 30, spaceTextIcon: 0),
+                       28.5, accuracy: 0.001)
     }
 
     // MARK: - Fill classes and palette

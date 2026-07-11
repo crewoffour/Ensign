@@ -148,11 +148,51 @@ public struct SymbolPath: Hashable, Sendable {
 /// One drawing operation. Text does not appear here by design: main-icon
 /// lettering arrives as outline paths from the extraction pipeline so
 /// that rendering is deterministic and font-free on every platform.
-/// Dynamic text (the amplifier fields around the symbol) is composed in
-/// EnsignRender with Core Text and never passes through this model.
+/// Dynamic text (the amplifier fields around the symbol) is laid out
+/// here in Core, in canvas coordinates with anchors, and shaped into
+/// glyphs by EnsignRender with Core Text and the bundled fonts.
 public enum DrawInstruction: Hashable, Sendable {
     case path(SymbolPath)
     case circle(center: SymbolPoint, radius: Double, style: DrawStyle)
+    case text(TextInstruction)
+}
+
+/// Anchored text in canvas coordinates: the info field layout's
+/// output. The renderer shapes it with the bundled Liberation fonts;
+/// the reference renderer shapes the same coordinates with the same
+/// fonts, which is what keeps text oracle-comparable.
+public struct TextInstruction: Hashable, Sendable {
+    public enum Anchor: Hashable, Sendable {
+        case start, middle, end
+    }
+    public enum Baseline: Hashable, Sendable {
+        /// The y coordinate is the alphabetic baseline (SVG default).
+        case alphabetic
+        /// The y coordinate is the glyph vertical center
+        /// (alignment-baseline middle).
+        case middle
+    }
+    public var text: String
+    public var x: Double
+    public var y: Double
+    public var anchor: Anchor
+    public var baseline: Baseline
+    public var fontSize: Double
+    public var isBold: Bool
+    public var fill: ColorRole
+
+    public init(text: String, x: Double, y: Double,
+                anchor: Anchor = .start, baseline: Baseline = .alphabetic,
+                fontSize: Double, isBold: Bool = false, fill: ColorRole) {
+        self.text = text
+        self.x = x
+        self.y = y
+        self.anchor = anchor
+        self.baseline = baseline
+        self.fontSize = fontSize
+        self.isBold = isBold
+        self.fill = fill
+    }
 }
 
 /// A complete symbol drawing: an ordered list of instructions against
@@ -163,6 +203,12 @@ public struct SymbolGeometry: Hashable, Sendable {
     /// The canvas side length. Always ``Ensign/canvasSize`` today; carried
     /// on the value so geometry is self-describing.
     public var canvasSize: Double
+
+    /// The grown canvas for symbols with info fields, in canvas
+    /// coordinates, or nil for the standard square canvas. Renderers
+    /// honoring it produce non-square output sized to these bounds,
+    /// matching milsymbol's grown SVG viewbox.
+    public var canvasBounds: FrameBounds? = nil
     /// Instructions in back-to-front paint order.
     public var instructions: [DrawInstruction]
 
