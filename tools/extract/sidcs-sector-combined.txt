@@ -1,0 +1,17 @@
+# Session 12 combined-symbol oracle rows: entity icons plus sector
+# modifier icons together, drawn from the JMSML crosswalk's real
+# mappings. Verifies composition order and positioning after the
+# modifier corpus lands. No extraction needed beyond the corpus.
+
+# UAV with attack/strike (sector 1)
+10030100001103000100
+# Tanker with boom, and with drogue (sector 2)
+10030100001101090004
+10030100001101090005
+# Signal unit with the area modifier (sector 1)
+10031000001110000200
+# LCS with the ASW modifier (sector 1), hostile variant too
+10033000001202060300
+10063000001202060300
+# Cargo heavy (sector 2)
+10030100001101070001

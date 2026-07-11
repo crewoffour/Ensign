@@ -336,7 +336,7 @@ final class ComposerTests: XCTestCase {
 
     func testRenderKeyCoversAmplifiers() throws {
         let plain = try MilSymbol("10031000001211000000").renderKey
-        XCTAssertTrue(plain.hasPrefix("ensign4:"))
+        XCTAssertTrue(plain.hasPrefix("ensign5:"))
         let battalionHQ = try MilSymbol("10031002161211000000").renderKey
         XCTAssertTrue(battalionHQ.contains("hq"))
         XCTAssertTrue(battalionHQ.contains("e-battalionSquadron"))
@@ -380,7 +380,7 @@ final class ComposerTests: XCTestCase {
     func testRenderKeyCoversExerciseContext() throws {
         let reality = try MilSymbol("10031000000000000000").renderKey
         let exercise = try MilSymbol("10131000000000000000").renderKey
-        XCTAssertTrue(reality.hasPrefix("ensign4:"))
+        XCTAssertTrue(reality.hasPrefix("ensign5:"))
         XCTAssertTrue(exercise.contains(":ex"))
         XCTAssertNotEqual(reality, exercise)
         XCTAssertTrue(try MilSymbol("10231000000000000000").renderKey.contains(":sim"))
@@ -536,6 +536,45 @@ final class ComposerTests: XCTestCase {
         let plainU = SymbolComposer.geometry(for: try MilSymbol("SFGPU----------"))
         let modifierU = SymbolComposer.geometry(for: try MilSymbol("SFGPU-----H----"))
         XCTAssertEqual(modifierU.instructions.count, plainU.instructions.count + 1)
+    }
+
+    // MARK: - Sector modifiers (Session 12)
+
+    func testSectorModifierKeysAndRenderKey() throws {
+        // UAV with the attack/strike sector one modifier, from the
+        // JMSML crosswalk.
+        let uav = try MilSymbol("10030100001103000100")
+        XCTAssertEqual(uav.sectorOneModifierIconKey,
+                       IconKey(family: .delta, code: "01m101"))
+        XCTAssertNil(uav.sectorTwoModifierIconKey)
+        // Tanker with the boom sector two modifier.
+        let tanker = try MilSymbol("10030100001101090004")
+        XCTAssertEqual(tanker.sectorTwoModifierIconKey,
+                       IconKey(family: .delta, code: "01m204"))
+        XCTAssertNil(try MilSymbol("10030100001101000000").sectorOneModifierIconKey)
+        // Render keys distinguish modifier variants; version bumped.
+        XCTAssertTrue(uav.renderKey.hasPrefix("ensign5:"))
+        XCTAssertTrue(uav.renderKey.contains("m1-01"))
+        XCTAssertNotEqual(uav.renderKey,
+                          try MilSymbol("10030100001103000000").renderKey)
+        // The extraction key for a modifier-probe SIDC is the modifier
+        // icon key; for a combined SIDC, the entity key.
+        XCTAssertEqual(try MilSymbol("10030100000000000100").extractionIconKey.code, "01m101")
+        XCTAssertEqual(uav.extractionIconKey.code, "01110300")
+    }
+
+    func testSectorModifierIconsCompose() throws {
+        // Library-agnostic: the combined symbol carries the entity icon
+        // plus each modifier icon's instructions, whatever the library
+        // holds today.
+        let base = try MilSymbol("10030100001103000000")
+        let combined = try MilSymbol("10030100001103000100")
+        let modifierIcon = IconLibrary.instructions(
+            for: IconKey(family: .delta, code: "01m101"),
+            base: combined.affiliation.frameBase) ?? []
+        let baseCount = SymbolComposer.geometry(for: base).instructions.count
+        let combinedCount = SymbolComposer.geometry(for: combined).instructions.count
+        XCTAssertEqual(combinedCount, baseCount + modifierIcon.count)
     }
 
     // MARK: - Fill classes and palette

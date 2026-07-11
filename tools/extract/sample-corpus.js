@@ -23,6 +23,7 @@ const FEATURE_LISTS = [
   "sidcs-status.txt",
   "sidcs-charlie-amps.txt",
   "sidcs-controlmeasures.txt",
+  "sidcs-sector-combined.txt",
 ];
 
 function readList(path) {
@@ -59,7 +60,11 @@ for (const list of FEATURE_LISTS) {
 
 // Per-group samples from the enumerated corpus: group boundaries are
 // the comment headers the enumerator writes.
-for (const corpus of ["out/corpus-delta.txt", "out/corpus-charlie.txt"]) {
+for (const corpus of [
+  "out/corpus-delta.txt",
+  "out/corpus-charlie.txt",
+  "out/corpus-modifiers.txt",
+]) {
   if (!existsSync(corpus)) {
     console.warn(`NOTE ${corpus} not found; run enumerate-corpus.js first`);
     continue;

@@ -84,7 +84,7 @@ func runKeysMode(listPath: String) -> Never {
     for sidc in sidcs {
         do {
             let symbol = try MilSymbol(sidc)
-            let key = symbol.iconKey
+            let key = symbol.extractionIconKey
             let base = String(describing: symbol.affiliation.frameBase)
             print("\(sidc)\t\(key.family.rawValue)\t\(key.code)\t\(base)")
         } catch {

@@ -294,6 +294,47 @@ public struct MilSymbol: Hashable, Sendable {
             return IconKey(family: .delta, code: value.symbolSetCode + value.entityCode)
         }
     }
+
+    /// Icon key for the sector one modifier icon (SIDC digits 17-18),
+    /// or nil when no modifier is set. Modifier icon codes use the
+    /// convention set + "m1" + code, disjoint from entity codes by the
+    /// letters. Sector modifiers are a delta-dialect concept; charlie
+    /// encodes its variants in the function ID itself.
+    public var sectorOneModifierIconKey: IconKey? {
+        guard case .delta(let value) = sidc, value.sectorOneModifier != "00" else {
+            return nil
+        }
+        return IconKey(family: .delta,
+                       code: value.symbolSetCode + "m1" + value.sectorOneModifier)
+    }
+
+    /// Icon key for the sector two modifier icon (SIDC digits 19-20),
+    /// or nil when no modifier is set.
+    public var sectorTwoModifierIconKey: IconKey? {
+        guard case .delta(let value) = sidc, value.sectorTwoModifier != "00" else {
+            return nil
+        }
+        return IconKey(family: .delta,
+                       code: value.symbolSetCode + "m2" + value.sectorTwoModifier)
+    }
+
+    /// The icon key an icon extraction of this SIDC isolates: for a
+    /// modifier-probe code (entity 000000 with exactly one sector
+    /// modifier set), the extraction's middle IS the modifier icon, so
+    /// the modifier key is the truthful assignment; for everything
+    /// else, the entity icon key. This is what the keys tool emits for
+    /// the extraction pipeline.
+    public var extractionIconKey: IconKey {
+        if case .delta(let value) = sidc, value.entityCode == "000000" {
+            if let one = sectorOneModifierIconKey, sectorTwoModifierIconKey == nil {
+                return one
+            }
+            if let two = sectorTwoModifierIconKey, sectorOneModifierIconKey == nil {
+                return two
+            }
+        }
+        return iconKey
+    }
 }
 
 extension MilSymbol: CustomStringConvertible {

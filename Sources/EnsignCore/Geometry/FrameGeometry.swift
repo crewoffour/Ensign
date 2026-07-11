@@ -460,6 +460,18 @@ public enum SymbolComposer {
             instructions.append(contentsOf: icon)
         }
 
+        // Sector modifier icons (SIDC digits 17-20) overlay the main
+        // icon at their authored sector positions, exactly as
+        // milsymbol emits them within the icon part.
+        if let key = symbol.sectorOneModifierIconKey,
+           let icon = IconLibrary.instructions(for: key, base: base) {
+            instructions.append(contentsOf: icon)
+        }
+        if let key = symbol.sectorTwoModifierIconKey,
+           let icon = IconLibrary.instructions(for: key, base: base) {
+            instructions.append(contentsOf: icon)
+        }
+
         // Frame amplifiers, in milsymbol's modifier emission order:
         // headquarters staff, task force bracket, installation bar,
         // feint/dummy caret, echelon, mobility. Every part positions

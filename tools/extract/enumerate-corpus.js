@@ -138,6 +138,42 @@ function enumerateCharlie() {
 mkdirSync(args.out, { recursive: true });
 const startedAt = Date.now();
 
+// ---------------------------------------------------------------------------
+// Delta sector modifiers: probe entity 000000 plus each modifier code,
+// discriminating by draw-instruction count against the bare-frame
+// baseline. validIcon is unreliable here (bare generics report true),
+// but a real modifier icon adds instructions and a nonexistent code
+// adds none.
+
+function instructionCount(sidc) {
+  builds += 1;
+  try {
+    return new ms.Symbol(sidc, { size: 20, infoFields: false })
+      .drawInstructions.length;
+  } catch {
+    return -1;
+  }
+}
+
+function enumerateDeltaModifiers(sets) {
+  const found = new Map();
+  for (const set of sets) {
+    const baseline = instructionCount(`1003${set}0000000000` + "0000");
+    if (baseline < 0) continue;
+    for (const sector of [1, 2]) {
+      const codes = [];
+      for (let n = 1; n < 100; n++) {
+        const code = pad2(n);
+        const mods = sector === 1 ? `${code}00` : `00${code}`;
+        const count = instructionCount(`1003${set}0000000000${mods}`);
+        if (count > baseline) codes.push(code);
+      }
+      if (codes.length > 0) found.set(`${set}:${sector}`, codes);
+    }
+  }
+  return found;
+}
+
 const delta = enumerateDelta();
 let deltaTotal = 0;
 const deltaLines = [
@@ -151,6 +187,25 @@ for (const [set, entities] of [...delta.entries()].sort()) {
     deltaLines.push(deltaSIDC(set, entity));
   }
   deltaTotal += entities.length;
+}
+
+const modifiers = enumerateDeltaModifiers([...delta.keys()]);
+let modifierTotal = 0;
+const modifierLines = [
+  "# Delta sector modifier icon corpus, enumerated from milsymbol " + ms.version,
+  "# by enumerate-corpus.js: entity 000000 with a single sector",
+  "# modifier set. Extraction isolates the modifier icon; the keys",
+  "# tool assigns it the set+sector+code icon key.",
+];
+for (const [key, codes] of [...modifiers.entries()].sort()) {
+  const [set, sector] = key.split(":");
+  modifierLines.push("", `# set ${set} sector ${sector}: ${codes.length} modifier icons`);
+  for (const code of codes) {
+    const mods = sector === "1" ? `${code}00` : `00${code}`;
+    modifierLines.push(`1003${set}0000000000${mods}`);
+  }
+  modifierTotal += codes.length;
+  console.log(`  modifiers ${key}: ${codes.length}`);
 }
 
 const charlie = enumerateCharlie();
@@ -171,12 +226,15 @@ for (const [key, functions] of [...charlie.entries()].sort()) {
 
 const seconds = ((Date.now() - startedAt) / 1000).toFixed(1);
 console.log(
-  `\nTotal: ${deltaTotal} delta + ${charlieTotal} charlie icons ` +
-  `(${builds} probe builds, ${seconds}s)`
+  `\nTotal: ${deltaTotal} delta + ${charlieTotal} charlie icons + ` +
+  `${modifierTotal} sector modifier icons (${builds} probe builds, ${seconds}s)`
 );
 
 if (!args.stats) {
   writeFileSync(`${args.out}/corpus-delta.txt`, deltaLines.join("\n") + "\n");
   writeFileSync(`${args.out}/corpus-charlie.txt`, charlieLines.join("\n") + "\n");
-  console.log(`Wrote ${args.out}/corpus-delta.txt and ${args.out}/corpus-charlie.txt`);
+  writeFileSync(`${args.out}/corpus-modifiers.txt`, modifierLines.join("\n") + "\n");
+  console.log(
+    `Wrote ${args.out}/corpus-delta.txt, ${args.out}/corpus-charlie.txt, ` +
+    `and ${args.out}/corpus-modifiers.txt`);
 }

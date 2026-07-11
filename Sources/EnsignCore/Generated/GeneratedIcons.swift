@@ -19,10 +19,10 @@
 // Copyright (c) Mans Beckman, MIT License. See NOTICE.
 
 extension IconLibrary {
-    /// The generated icon table: 5941 icons across 31 shards.
+    /// The generated icon table: 6918 icons across 31 shards.
     static let generatedIcons: [IconKey: IconEntry] = {
         var table: [IconKey: IconEntry] = [:]
-        table.reserveCapacity(5941)
+        table.reserveCapacity(6918)
         registerGenerated_charlie_IA(into: &table)
         registerGenerated_charlie_IG(into: &table)
         registerGenerated_charlie_IP(into: &table)
