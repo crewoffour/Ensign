@@ -3,105 +3,111 @@
 A native Swift library for MIL-STD-2525 military symbology.
 
 Ensign parses Symbol Identification Codes in both modern dialects - the
-15-character alphanumeric SIDC of MIL-STD-2525C and the 20-digit numeric
-SIDC of MIL-STD-2525D - and resolves them into a single normalized symbol
-model, with vector rendering, rasterization, sprite-atlas generation, and
-SwiftUI views built on top.
+15-character alphanumeric SIDC of MIL-STD-2525C and the 20- or 30-digit
+numeric SIDC of MIL-STD-2525D/E - and resolves them into one normalized
+symbol model, with vector rendering, rasterization, sprite generation,
+info field text, and SwiftUI views built on top. No fonts, images, or
+network access at runtime; no dependencies.
 
 There is no other native Swift implementation of MIL-STD-2525. Ensign
 aims to be the definitive one.
 
-## Status
+## Coverage
 
-Early development. The SIDC parsers, normalized symbol model, frame
-rendering (all affiliation and domain frames with the standard 2525
-fill palettes), and the icon data pipeline are functional, with output
-verified pixel-identical against milsymbol reference renders. The
-maritime icon subset and SwiftUI support are under active
-development. The public API is not yet stable and will change before
-1.0.
+The complete point-symbol space of the standard, in both dialects:
+6,918 icons across every warfighting symbol set (air, space, land
+units, civilians, equipment, installations, sea surface, subsurface,
+mine warfare, activities, SIGINT, cyberspace, control measure points,
+dismounted individuals), all frame shapes and affiliations, echelons,
+mobility, HQ/task force/feint-dummy, engagement status conditions,
+leadership, exercise and simulation amplifiers, sector one and two
+modifier icons, and the full text amplifier field system.
+
+Out of scope by charter: multipoint tactical graphics (boundaries,
+phase lines, areas - map geometry, not point symbols) and, until a
+post-1.0 release, the METOC sets. Known 1.0 limitations: cyberspace
+(set 60) symbols render icon-only pending frame verification, and
+sector modifier icons compose on framed symbols only; both are
+tracked for the first post-1.0 releases.
+
+## Provenance
+
+Every rendered feature is verified pixel-for-pixel against
+[milsymbol](https://github.com/spatialillusions/milsymbol) (the
+reference JavaScript implementation, MIT) through an automated oracle
+pipeline, and the symbol tables are adjudicated against
+[JMSML](https://github.com/Esri/joint-military-symbology-xml), the
+DISA/Esri machine-readable expression of MIL-STD-2525D, including the
+official 2525C-to-2525D crosswalk. The tooling lives in
+`tools/extract/`; decisions of record live in `ENSIGN_PLAN.md`.
+
+## Installation
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/crewoffour/Ensign.git", from: "1.0.0")
+]
+```
+
+Targets: `EnsignCore` (parsing, model, geometry; runs anywhere Swift
+runs, including Linux), `EnsignRender` (Core Graphics rasterization,
+Apple platforms), `EnsignUI` (SwiftUI views).
 
 ## Quick start
 
 ```swift
 import EnsignCore
+import EnsignRender
 
-// Both SIDC dialects parse through one entry point.
-let legacy = try SIDC("SFSPCLDD-------")      // 2525C, 15 characters
-let modern = try SIDC("10033000001201000000") // 2525D, 20 digits
+// Both dialects parse through one entry point.
+let symbol = try MilSymbol("10031000181211020000")   // 2525D
+let legacy = try MilSymbol("SFGPUCI---K----")        // 2525C
 
-// Both resolve into the same normalized model.
-let symbol = MilSymbol(sidc: modern)
-symbol.affiliation    // .friend
-symbol.domain         // .seaSurface
-symbol.status         // .present
-symbol.frame.shape    // .circle
-symbol.frame.isDashed // false
+// Rasterize.
+let renderer = SymbolRenderer(palette: .light)
+let image = renderer.image(for: symbol, size: 128)
+
+// SwiftUI.
+MilSymbolView(symbol: symbol)
 ```
 
-Parse failures are descriptive:
+### Map engines and render keys
+
+`symbol.renderKey` is a stable string identity for a symbol's
+rendered appearance: two symbols with equal keys render identically,
+so a map engine can register one image per key and share it across any
+number of tracks. Fifty thousand tracks resolve to a few dozen images.
+The key format version is `RenderKey.version`; patch releases never
+change rendering under an unchanged key.
+
+### Info fields
 
 ```swift
-do {
-    _ = try SIDC("10933000001201000000")
-} catch {
-    print(error)
-    // Invalid context digit '9' at position 3.
-    // Expected 0 (reality), 1 (exercise), or 2 (simulation).
-}
+var fields = InfoFields()
+fields.uniqueDesignation = "A21"
+fields.type = "MACHINE GUN"
+fields.dtg = "30140000ZSEP97"
+let geometry = SymbolComposer.geometry(for: symbol, infoFields: fields)
+let labeled = renderer.image(geometry: geometry,
+                             fillClass: symbol.fillClass,
+                             pixelsPerCanvasUnit: 1.0)
 ```
 
-## Packages
+Field names mirror milsymbol's option names. Text shapes with bundled
+Liberation Sans (SIL OFL). Info field rendering is opt-in and outside
+the render key: labeled images are per-instance, not shared sprites.
 
-| Target | Contents | Platforms |
-|---|---|---|
-| EnsignCore | SIDC parsing, normalized symbol model, neutral geometry model | iOS 16+, macOS 13+, visionOS 1+, Linux |
-| EnsignRender | Core Graphics drawing, rasterization, sprite atlas generation | iOS 16+, macOS 13+, visionOS 1+ |
-| EnsignUI | SwiftUI views | iOS 16+, macOS 13+, visionOS 1+ |
-| ensign-catalog | Demonstration and visual-regression catalog | development tool |
+## Performance notes
 
-## Installation
-
-Swift Package Manager only:
-
-```swift
-dependencies: [
-    .package(url: "https://github.com/OWNER/Ensign.git", from: "0.1.0")
-]
-```
-
-## Design principles
-
-- **Two dialects, one model.** The charlie (2525A/B/C) and delta
-  (2525D/E) SIDC families parse separately and resolve into one
-  normalized `MilSymbol`. Ensign does not convert codes between
-  families, because the crosswalk is not one-to-one; it renders both
-  natively instead.
-- **Graceful on live traffic.** Codes that parse but reference unknown
-  icons render as frame and fill rather than failing. A symbology
-  library facing a live CoT feed must degrade, not crash.
-- **Semantic color, resolved late.** Geometry carries color roles, not
-  colors. Standard light, medium, and dark fill modes and fully custom
-  palettes (including accessibility palettes) are a render-time choice.
-- **Deterministic, font-free rendering.** Icon lettering ships as
-  outline paths, so output is identical on every platform and OS
-  version.
-
-## Roadmap
-
-1. SIDC parsing for both dialects and the normalized model (done)
-2. Frame rendering: all affiliation and domain outlines, fills, status (done)
-3. Symbol data pipeline: milsymbol port as proving ground and oracle (done)
-4. Maritime-first icon subset (done)
-5. Rasterization, sprite atlas generation, SwiftUI views (done)
-6. Beacon integration via runtime rendering (done)
-7. Amplifiers and modifiers (done)
-8. Migration to the authoritative JMSML symbol data
+Debug builds of the full icon library compile in about 90 seconds and
+are cached by SwiftPM thereafter; release (whole-module) builds of the
+library take several minutes and happen once per configuration. Icon
+lookups, composition, and rendering are allocation-light; the library
+carries no runtime resources except the two info-field fonts.
 
 ## License
 
-Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
-
-Symbol definition data in future releases will be ported from
-[milsymbol](https://github.com/spatialillusions/milsymbol) (MIT), with
-attribution maintained in NOTICE.
+Apache 2.0, copyright Jason Griffin. Rendering behavior is ported
+from milsymbol (MIT, Måns Beckman) with geometry extracted through an
+automated pipeline; Liberation Sans is bundled under the SIL Open Font
+License 1.1. See NOTICE.

@@ -12,6 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// The render key format namespace.
+public enum RenderKey {
+    /// The current render key format version. Bumped whenever a
+    /// rendering change makes previously cached images stale for the
+    /// same key; equal keys under equal versions render identically.
+    /// Stability policy: patch releases never bump this; minor
+    /// releases may, and the CHANGELOG says so when they do.
+    public static let version = "ensign5"
+}
+
 extension MilSymbol {
     /// A canonical string identifying what this symbol renders as.
     ///
@@ -27,13 +37,14 @@ extension MilSymbol {
     /// identity, frame base, fill class, dash treatment, framing, the
     /// space and activity overlays, and the frame amplifiers (HQ/task
     /// force/feint-dummy flags, echelon, mobility). It is deliberately versioned
-    /// ("ensign5" since sector modifier icons joined the rendering)
+    /// (RenderKey.version, "ensign5" since sector modifier icons
+    /// joined the rendering)
     /// because new rendered features will extend it; do not persist render keys across app versions
     /// before Ensign 1.0.
     public var renderKey: String {
         let descriptor = frame
         var parts = [
-            "ensign5",
+            RenderKey.version,
             iconKey.family.rawValue,
             iconKey.code,
             String(describing: affiliation.frameBase),

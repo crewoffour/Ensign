@@ -16,7 +16,7 @@
 public enum Ensign {
     /// The library version. Follows semantic versioning; the public API
     /// stabilizes at 1.0.0.
-    public static let version = "0.1.0"
+    public static let version = "1.0.0"
 
     /// The nominal square canvas that all symbol geometry is authored
     /// against, in abstract units. The symbol anchor point sits at the

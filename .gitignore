@@ -5,3 +5,10 @@ xcuserdata/
 DerivedData/
 *.xcodeproj
 Package.resolved
+
+# Generated tooling output. The committed corpus lists live in
+# tools/extract/corpus/; everything under out/ and node_modules is
+# regenerable.
+tools/extract/out/
+tools/extract/node_modules/
+out-sprites/

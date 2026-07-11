@@ -338,7 +338,7 @@ final class ComposerTests: XCTestCase {
 
     func testRenderKeyCoversAmplifiers() throws {
         let plain = try MilSymbol("10031000001211000000").renderKey
-        XCTAssertTrue(plain.hasPrefix("ensign5:"))
+        XCTAssertTrue(plain.hasPrefix(RenderKey.version + ":"))
         let battalionHQ = try MilSymbol("10031002161211000000").renderKey
         XCTAssertTrue(battalionHQ.contains("hq"))
         XCTAssertTrue(battalionHQ.contains("e-battalionSquadron"))
@@ -382,7 +382,7 @@ final class ComposerTests: XCTestCase {
     func testRenderKeyCoversExerciseContext() throws {
         let reality = try MilSymbol("10031000000000000000").renderKey
         let exercise = try MilSymbol("10131000000000000000").renderKey
-        XCTAssertTrue(reality.hasPrefix("ensign5:"))
+        XCTAssertTrue(reality.hasPrefix(RenderKey.version + ":"))
         XCTAssertTrue(exercise.contains(":ex"))
         XCTAssertNotEqual(reality, exercise)
         XCTAssertTrue(try MilSymbol("10231000000000000000").renderKey.contains(":sim"))
@@ -555,7 +555,7 @@ final class ComposerTests: XCTestCase {
                        IconKey(family: .delta, code: "01m204"))
         XCTAssertNil(try MilSymbol("10030100001101000000").sectorOneModifierIconKey)
         // Render keys distinguish modifier variants; version bumped.
-        XCTAssertTrue(uav.renderKey.hasPrefix("ensign5:"))
+        XCTAssertTrue(uav.renderKey.hasPrefix(RenderKey.version + ":"))
         XCTAssertTrue(uav.renderKey.contains("m1-01"))
         XCTAssertNotEqual(uav.renderKey,
                           try MilSymbol("10030100001103000000").renderKey)
